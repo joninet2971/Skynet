@@ -7,7 +7,7 @@ def create_airplane_view(request):
         form = AirplaneForm(request.POST)
         if form.is_valid():
             airplane_service.create_airplane_service(form.cleaned_data)
-            return redirect('airplane_list')  # asegurate de tener esta ruta
+            return redirect('airplane_list')  
     else:
         form = AirplaneForm()
     return render(request, 'airplane/airplane_create.html', {'form': form})
