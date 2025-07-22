@@ -1,20 +1,20 @@
 {% extends "home/base.html" %}
 {% load widget_tweaks %}
 
-{% block title %}Crear Avión - Skynet{% endblock %}
+{% block title %}Create Airplane - Skynet{% endblock %}
 
-{% block header_title %}Registrar Nuevo Avión{% endblock %}
+{% block header_title %}Register New Airplane{% endblock %}
 
 {% block content %}
 <div class="card">
     <div class="card-header">
         <div class="row align-items-center">
             <div class="col-md-6">
-                <h5 class="mb-0"><i class="fas fa-plane me-2"></i>Formulario de Registro de Avión</h5>
+                <h5 class="mb-0"><i class="fas fa-plane me-2"></i>Airplane Registration Form</h5>
             </div>
             <div class="col-md-6 text-end">
-                <a href="" class="btn btn-secondary">
-                    <i class="fas fa-arrow-left me-2"></i>Volver al Listado
+                <a href="{% url 'airplane_list' %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>Back to List
                 </a>
             </div>
         </div>
@@ -23,41 +23,32 @@
         <form method="post" class="needs-validation" novalidate>
             {% csrf_token %}
             
-            <div class="row mb-4">
-                <div class="col-md-12">
-                    <div class="alert alert-info">
-                        <i class="fas fa-info-circle me-2"></i>
-                        Todos los campos son obligatorios.
-                    </div>
-                </div>
-            </div>
-            
             <div class="row mb-3">
                 <div class="col-md-6">
                     <div class="form-group mb-3">
-                        <label for="id_model" class="form-label">Modelo <span class="text-danger">*</span></label>
+                        <label for="id_model" class="form-label">Model <span class="text-danger">*</span></label>
                         {{ form.model|add_class:"form-control" }}
-                        <div class="invalid-feedback">Ingrese el modelo del avión.</div>
+                        <div class="invalid-feedback">Please enter the airplane model.</div>
                     </div>
 
                     <div class="form-group mb-3">
-                        <label for="id_capacity" class="form-label">Capacidad <span class="text-danger">*</span></label>
+                        <label for="id_capacity" class="form-label">Capacity <span class="text-danger">*</span></label>
                         {{ form.capacity|add_class:"form-control" }}
-                        <div class="invalid-feedback">Ingrese la capacidad total.</div>
+                        <div class="invalid-feedback">Please enter the total capacity.</div>
                     </div>
                 </div>
                 
                 <div class="col-md-6">
                     <div class="form-group mb-3">
-                        <label for="id_rows" class="form-label">Filas <span class="text-danger">*</span></label>
+                        <label for="id_rows" class="form-label">Rows <span class="text-danger">*</span></label>
                         {{ form.rows|add_class:"form-control" }}
-                        <div class="invalid-feedback">Ingrese la cantidad de filas.</div>
+                        <div class="invalid-feedback">Please enter the number of rows.</div>
                     </div>
 
                     <div class="form-group mb-3">
-                        <label for="id_columns" class="form-label">Columnas <span class="text-danger">*</span></label>
+                        <label for="id_columns" class="form-label">Columns <span class="text-danger">*</span></label>
                         {{ form.columns|add_class:"form-control" }}
-                        <div class="invalid-feedback">Ingrese la cantidad de columnas.</div>
+                        <div class="invalid-feedback">Please enter the number of columns.</div>
                     </div>
                 </div>
             </div>
@@ -67,10 +58,10 @@
             <div class="row">
                 <div class="col-md-12 text-end">
                     <button type="reset" class="btn btn-secondary">
-                        <i class="fas fa-eraser me-2"></i>Limpiar
+                        <i class="fas fa-eraser me-2"></i>Clear
                     </button>
                     <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-save me-2"></i>Guardar Avión
+                        <i class="fas fa-save me-2"></i>Save Airplane
                     </button>
                 </div>
             </div>
@@ -79,7 +70,6 @@
 </div>
 
 <script>
-    // Bootstrap validation
     document.addEventListener('DOMContentLoaded', function() {
         const forms = document.querySelectorAll('.needs-validation');
         Array.from(forms).forEach(form => {

@@ -7,3 +7,6 @@ def create_airplane(model, capacity, rows, columns):
         rows=rows,
         columns=columns
     )
+
+def get_all_airplanes():
+    return Airplane.objects.all()

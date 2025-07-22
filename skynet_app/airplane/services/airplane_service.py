@@ -8,9 +8,13 @@ def create_airplane_service(data):
     columns = data['columns']
 
     if capacity != rows * columns:
-        raise ValidationError("La capacidad debe ser igual a filas × columnas.")
+        raise ValidationError("The capacity must be equal to rows × columns.")
 
     if rows <= 0 or columns <= 0:
-        raise ValidationError("Las filas y columnas deben ser números enteros positivos.")
+        raise ValidationError("Rows and columns must be positive integers.")
 
     return airplane_repository.create_airplane(model, capacity, rows, columns)
+
+
+def get_all_airplanes_service():
+    return airplane_repository.get_all_airplanes()
