@@ -9,6 +9,9 @@ from reservations.repositories import (
     FlightSegmentRepository,
     TicketRepository
 )
+from reservations.services.route_finder import find_route_chain
+import uuid
+
 
 # -------------------- Passenger Service --------------------
 
@@ -48,12 +51,51 @@ class PassengerService:
 
 # -------------------- Itinerary Service --------------------
 
+
 class ItineraryService:
     @staticmethod
-    def create(passenger: Passenger, reservation_code: str) -> Itinerary:
+    def create(passenger: Passenger, reservation_code: str = None) -> Itinerary:
+        if not reservation_code:
+            reservation_code = str(uuid.uuid4())[:8].upper()
+
         if Itinerary.objects.filter(reservation_code=reservation_code).exists():
             raise ValidationError("Reservation code already exists.")
-        return ItineraryRepository.create(passenger, reservation_code)
+
+        return Itinerary.objects.create(passenger=passenger, reservation_code=reservation_code)
+
+    @staticmethod
+    def create_auto(passenger: Passenger, origin_code: str, destination_code: str) -> Itinerary:
+        routes = find_route_chain(origin_code, destination_code)
+        if not routes:
+            raise ValidationError("No route found between selected airports.")
+
+        reservation_code = str(uuid.uuid4())[:8].upper()
+        itinerary = ItineraryService.create(passenger, reservation_code)
+
+        for route in routes:
+            flight = Flight.objects.filter(route=route).first()
+            if not flight:
+                raise ValidationError(f"No flight found for route {route}")
+
+            seat = Seat.objects.filter(airplane=flight.airplane, status='available').first()
+            if not seat:
+                raise ValidationError(f"No available seat for flight {flight}")
+
+            # Cambiás el estado del asiento si querés reservarlo
+            seat.status = 'reserved'
+            seat.save()
+
+            FlightSegmentRepository.create(
+                itinerary=itinerary,
+                flight=flight,
+                seat=seat,
+                price=flight.base_price,
+                status="confirmed"
+            )
+
+        return itinerary
+
+
 
     @staticmethod
     def update(itinerary_id: int, data: dict) -> Itinerary:

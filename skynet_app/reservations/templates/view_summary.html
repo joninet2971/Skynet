@@ -1,0 +1,44 @@
+<h2>Resumen de Itinerario</h2>
+
+<h3>🧍‍♂️ Pasajero</h3>
+<ul>
+  <li><strong>Nombre:</strong> {{ passenger.name }}</li>
+  <li><strong>Documento:</strong> {{ passenger.document }}</li>
+  <li><strong>Email:</strong> {{ passenger.email }}</li>
+  <li><strong>Teléfono:</strong> {{ passenger.phone }}</li>
+</ul>
+
+<h3>✈️ Itinerario</h3>
+<p><strong>Código de reserva:</strong> {{ itinerary.reservation_code }}</p>
+
+<h4>Escalas:</h4>
+<table border="1" cellpadding="5">
+  <tr>
+    <th>Origen</th>
+    <th>Destino</th>
+    <th>Fecha salida</th>
+    <th>Fecha llegada</th>
+    <th>Asiento</th>
+    <th>Precio</th>
+  </tr>
+  {% for seg in segments %}
+  <tr>
+    <td>{{ seg.flight.route.origin_airport.name }}</td>
+    <td>{{ seg.flight.route.destination_airport.name }}</td>
+    <td>{{ seg.flight.departure_time }}</td>
+    <td>{{ seg.flight.arrival_time }}</td>
+    <td>{{ seg.seat.code }}</td>
+    <td>${{ seg.price }}</td>
+  </tr>
+  {% endfor %}
+</table>
+
+<h3>Ticket</h3>
+{% if ticket %}
+<ul>
+  <li><strong>Barcode:</strong> {{ ticket.barcode }}</li>
+  <li><strong>Estado:</strong> {{ ticket.status }}</li>
+</ul>
+{% else %}
+<p>No se ha generado un ticket todavía.</p>
+{% endif %}
