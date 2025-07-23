@@ -1,0 +1,145 @@
+from typing import Optional, List
+from django.core.exceptions import ValidationError
+from reservations.models import Passenger, Itinerary, FlightSegment, Ticket
+from flight.models import Flight
+from airplane.models import Seat
+from reservations.repositories import (
+    PassengerRepository,
+    ItineraryRepository,
+    FlightSegmentRepository,
+    TicketRepository
+)
+
+# -------------------- Passenger Service --------------------
+
+class PassengerService:
+    @staticmethod
+    def create(data: dict) -> Passenger:
+        if Passenger.objects.filter(document=data.get("document")).exists():
+            raise ValidationError("Passenger with this document already exists.")
+        return PassengerRepository.create(**data)
+
+    @staticmethod
+    def update(passenger_id: int, data: dict) -> Passenger:
+        passenger = PassengerRepository.get_by_id(passenger_id)
+        if not passenger:
+            raise ValidationError("Passenger not found.")
+
+        if "document" in data:
+            if Passenger.objects.exclude(id=passenger.id).filter(document=data["document"]).exists():
+                raise ValidationError("Document already in use.")
+
+        return PassengerRepository.update(passenger, **data)
+
+    @staticmethod
+    def delete(passenger_id: int) -> bool:
+        passenger = PassengerRepository.get_by_id(passenger_id)
+        if not passenger:
+            raise ValidationError("Passenger not found.")
+        return PassengerRepository.delete(passenger)
+
+    @staticmethod
+    def get(passenger_id: int) -> Optional[Passenger]:
+        return PassengerRepository.get_by_id(passenger_id)
+
+    @staticmethod
+    def list_all() -> List[Passenger]:
+        return PassengerRepository.get_all()
+
+# -------------------- Itinerary Service --------------------
+
+class ItineraryService:
+    @staticmethod
+    def create(passenger: Passenger, reservation_code: str) -> Itinerary:
+        if Itinerary.objects.filter(reservation_code=reservation_code).exists():
+            raise ValidationError("Reservation code already exists.")
+        return ItineraryRepository.create(passenger, reservation_code)
+
+    @staticmethod
+    def update(itinerary_id: int, data: dict) -> Itinerary:
+        itinerary = ItineraryRepository.get_by_id(itinerary_id)
+        if not itinerary:
+            raise ValidationError("Itinerary not found.")
+        return ItineraryRepository.update(itinerary, **data)
+
+    @staticmethod
+    def delete(itinerary_id: int) -> bool:
+        itinerary = ItineraryRepository.get_by_id(itinerary_id)
+        if not itinerary:
+            raise ValidationError("Itinerary not found.")
+        return ItineraryRepository.delete(itinerary)
+
+    @staticmethod
+    def get(itinerary_id: int) -> Optional[Itinerary]:
+        return ItineraryRepository.get_by_id(itinerary_id)
+
+    @staticmethod
+    def list_all() -> List[Itinerary]:
+        return ItineraryRepository.get_all()
+
+# -------------------- FlightSegment Service --------------------
+
+class FlightSegmentService:
+    @staticmethod
+    def create(itinerary: Itinerary, flight: Flight, seat: Seat, price: float, status: str) -> FlightSegment:
+        if FlightSegment.objects.filter(seat=seat).exists():
+            raise ValidationError("Seat already assigned.")
+        return FlightSegmentRepository.create(itinerary, flight, seat, price, status)
+
+    @staticmethod
+    def update(segment_id: int, data: dict) -> FlightSegment:
+        segment = FlightSegmentRepository.get_by_id(segment_id)
+        if not segment:
+            raise ValidationError("Flight segment not found.")
+
+        if "seat" in data:
+            if FlightSegment.objects.exclude(id=segment.id).filter(seat=data["seat"]).exists():
+                raise ValidationError("Seat already assigned.")
+
+        return FlightSegmentRepository.update(segment, **data)
+
+    @staticmethod
+    def delete(segment_id: int) -> bool:
+        segment = FlightSegmentRepository.get_by_id(segment_id)
+        if not segment:
+            raise ValidationError("Flight segment not found.")
+        return FlightSegmentRepository.delete(segment)
+
+    @staticmethod
+    def get(segment_id: int) -> Optional[FlightSegment]:
+        return FlightSegmentRepository.get_by_id(segment_id)
+
+    @staticmethod
+    def list_by_itinerary(itinerary: Itinerary) -> List[FlightSegment]:
+        return FlightSegmentRepository.get_by_itinerary(itinerary)
+
+# -------------------- Ticket Service --------------------
+
+class TicketService:
+    @staticmethod
+    def create(itinerary: Itinerary, barcode: str, status: str = "issued") -> Ticket:
+        if Ticket.objects.filter(barcode=barcode).exists():
+            raise ValidationError("Barcode already exists.")
+        return TicketRepository.create(itinerary, barcode, status)
+
+    @staticmethod
+    def update(ticket_id: int, data: dict) -> Ticket:
+        ticket = TicketRepository.get_by_id(ticket_id)
+        if not ticket:
+            raise ValidationError("Ticket not found.")
+        return TicketRepository.update(ticket, **data)
+
+    @staticmethod
+    def delete(ticket_id: int) -> bool:
+        ticket = TicketRepository.get_by_id(ticket_id)
+        if not ticket:
+            raise ValidationError("Ticket not found.")
+        return TicketRepository.delete(ticket)
+
+    @staticmethod
+    def get(ticket_id: int) -> Optional[Ticket]:
+        return TicketRepository.get_by_id(ticket_id)
+
+    @staticmethod
+    def get_by_itinerary(itinerary: Itinerary) -> Optional[Ticket]:
+        return TicketRepository.get_by_itinerary(itinerary)
