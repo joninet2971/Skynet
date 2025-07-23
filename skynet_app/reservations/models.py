@@ -1,3 +1,54 @@
 from django.db import models
+from django.core.exceptions import ValidationError
+from airplane.models import Seat
+from flight.models import Flight
 
-# Create your models here.
+class Passenger(models.Model):
+    name = models.CharField(max_length=100)
+    document = models.CharField(max_length=50, unique=True)
+    email = models.EmailField()
+    phone = models.CharField(max_length=20, blank=True, null=True)
+    birth_date = models.DateField(blank=True, null=True)
+    document_type = models.CharField(max_length=50, blank=True, null=True)
+
+    def __str__(self):
+        return f"{self.name} ({self.document})"
+  
+class Itinerary(models.Model): #Este vendria a ser reservation pero para varios vuelos en el caso de tener escalas
+    passenger = models.ForeignKey(Passenger, on_delete=models.CASCADE, related_name='itineraries')
+    reservation_code = models.CharField(max_length=100, unique=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    total_price = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+
+    def __str__(self):
+        return f"Itinerary {self.reservation_code} - {self.passenger.name}"
+    
+class FlightSegment(models.Model):#Esta es la tabla intermedia de la que hablamos, donde cargamos varios vuelos a la misma reserva o intinerario
+    itinerary = models.ForeignKey(Itinerary, on_delete=models.CASCADE, related_name='segments')
+    flight = models.ForeignKey(Flight, on_delete=models.CASCADE)
+    seat = models.OneToOneField(Seat, on_delete=models.SET_NULL, null=True, blank=True)
+    status = models.CharField(max_length=50)
+    price = models.DecimalField(max_digits=10, decimal_places=2)
+
+    def clean(self):
+        if self.seat and FlightSegment.objects.filter(seat=self.seat).exclude(id=self.id).exists():
+            raise ValidationError("This seat is already assigned to another segment.")
+
+    def save(self, *args, **kwargs):
+        self.clean()
+        super().save(*args, **kwargs)
+        self.itinerary.total_price = sum(seg.price for seg in self.itinerary.segments.all())
+        self.itinerary.save()
+
+    def __str__(self):
+        return f"Segment: {self.flight} - Itinerary {self.itinerary.reservation_code}"
+
+class Ticket(models.Model):
+    itinerary = models.OneToOneField(Itinerary, on_delete=models.CASCADE, related_name='ticket')
+    barcode = models.CharField(max_length=100, unique=True)
+    issued_at = models.DateTimeField(auto_now_add=True)
+    status = models.CharField(max_length=50)
+
+    def __str__(self):
+        return f"Ticket {self.barcode} - Itinerary {self.itinerary.reservation_code}"
+
