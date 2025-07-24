@@ -3,7 +3,7 @@ from django.core.exceptions import ValidationError
 from reservations.models import Passenger, Itinerary, FlightSegment, Ticket
 from flight.models import Flight
 from airplane.models import Seat
-from reservations.repositories import (
+from reservations.repositories.reservations import (
     PassengerRepository,
     ItineraryRepository,
     FlightSegmentRepository,

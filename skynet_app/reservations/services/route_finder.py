@@ -1,5 +1,5 @@
 from collections import deque
-from flight.models import Route, Airport
+from flight.models import Route
 from typing import List, Optional
 
 def find_route_chain(origin_code: str, destination_code: str) -> Optional[List[Route]]:
