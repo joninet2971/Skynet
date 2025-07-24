@@ -13,6 +13,10 @@ class AirportService:
             raise ValidationError("Airport already exist")
         return AirportRepository.create(data)
     
+    @staticmethod
+    def get_all():
+        return AirportRepository.get_all()
+    
 class RouteService:
     @staticmethod
     def create(data):
