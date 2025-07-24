@@ -1,0 +1,47 @@
+{% extends "home/base.html" %}
+{% load seat_tags %}
+
+{% block title %}Airplane Detail - Skynet{% endblock %}
+{% block header_title %}Airplane Details{% endblock %}
+
+{% block content %}
+<div class="card">
+  <div class="card-header">
+    <h5 class="mb-0"><i class="fas fa-plane me-2"></i>Airplane Information</h5>
+  </div>
+  <div class="card-body">
+    <p><strong>Model:</strong> {{ airplane.model }}</p>
+    <p><strong>Capacity:</strong> {{ airplane.capacity }}</p>
+    <p><strong>Rows:</strong> {{ airplane.rows }}</p>
+    <p><strong>Columns:</strong> {{ airplane.columns }}</p>
+  </div>
+</div>
+
+<div class="card mt-4">
+  <div class="card-header">
+    <h5 class="mb-0"><i class="fas fa-chair me-2"></i>Seat Layout</h5>
+  </div>
+    <div class="card-body mt-2">  
+        <div class="d-flex flex-column gap-3 align-items-center">
+            {% for row in row_range %}
+                <div class="d-flex gap-3">
+                    {% for column in col_range %}
+                        {% get_seat seats row column as seat %}
+                        {% if seat %}
+                            {% if seat.status == "occupied" %}
+                                <i class="fas fa-chair fa-2x text-danger" title="Occupied"></i>
+                            {% elif seat.status == "reserved" %}
+                                <i class="fas fa-chair fa-2x text-warning" title="Reserved"></i>
+                            {% else %}
+                                <i class="fas fa-chair fa-2x text-success" title="Available"></i>
+                            {% endif %}
+                        {% else %}
+                            <i class="fas fa-chair fa-2x text-secondary" title="Not available"></i>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}
