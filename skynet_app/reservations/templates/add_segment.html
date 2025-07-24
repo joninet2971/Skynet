@@ -1,0 +1,22 @@
+{% extends "home/base.html" %}
+{% block content %}
+
+<h2>Agregar segmento al itinerario</h2>
+
+<form method="post">
+  {% csrf_token %}
+  {{ form.as_p }}
+
+  <button type="submit">Agregar escala</button>
+</form>
+
+<p><a href="{% url 'view_summary' itinerary_id=itinerary_id %}">Finalizar y ver resumen</a></p>
+
+{% if form.errors %}
+  <div style="color:red;">
+    <strong>Errores:</strong>
+    {{ form.errors }}
+  </div>
+{% endif %}
+
+{% endblock %}
