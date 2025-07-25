@@ -1,0 +1,16 @@
+{% extends "home/base.html" %}
+
+{% block title %}Eliminar Vuelo{% endblock %}
+
+{% block content %}
+<div class="form-container">
+    <h1>Eliminar Vuelo</h1>
+    <p>¿Estás seguro que querés eliminar el vuelo <strong>#{{ object.id }}</strong>?</p>
+
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger">Eliminar</button>
+        <a href="{% url 'flight_list' %}" class="btn btn-secondary ms-2">Cancelar</a>
+    </form>
+</div>
+{% endblock %}

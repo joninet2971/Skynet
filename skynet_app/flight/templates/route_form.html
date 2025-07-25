@@ -1,12 +1,12 @@
 {% extends "home/base.html" %}
 
 {% block title %}
-    {% if object %}Editar Aeropuerto{% else %}Nuevo Aeropuerto{% endif %}
+    {% if object %}Editar Ruta{% else %}Nueva Ruta{% endif %}
 {% endblock %}
 
 {% block content %}
 <div class="form-container">
-    <h1>{% if object %}Editar Aeropuerto{% else %}Nuevo Aeropuerto{% endif %}</h1>
+    <h1>{% if object %}Editar Ruta{% else %}Nueva Ruta{% endif %}</h1>
 
     <form method="post" novalidate>
         {% csrf_token %}
@@ -24,7 +24,7 @@
         {% endfor %}
 
         <button type="submit" class="btn btn-success">Guardar</button>
-        <a href="{% url 'airport_list' %}" class="btn btn-secondary ms-2">Cancelar</a>
+        <a href="{% url 'route_list' %}" class="btn btn-secondary ms-2">Cancelar</a>
     </form>
 </div>
 {% endblock %}

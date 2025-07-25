@@ -1,0 +1,16 @@
+{% extends "home/base.html" %}
+
+{% block title %}Eliminar Ruta{% endblock %}
+
+{% block content %}
+<div class="form-container">
+    <h1>Eliminar Ruta</h1>
+    <p>¿Estás seguro que querés eliminar la ruta de <strong>{{ object.origin_airport.code }}</strong> a <strong>{{ object.destination_airport.code }}</strong>?</p>
+
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger">Eliminar</button>
+        <a href="{% url 'route_list' %}" class="btn btn-secondary ms-2">Cancelar</a>
+    </form>
+</div>
+{% endblock %}

@@ -1,12 +1,12 @@
 {% extends "home/base.html" %}
 
 {% block title %}
-    {% if object %}Editar Aeropuerto{% else %}Nuevo Aeropuerto{% endif %}
+    {% if object %}Editar Vuelo{% else %}Nuevo Vuelo{% endif %}
 {% endblock %}
 
 {% block content %}
 <div class="form-container">
-    <h1>{% if object %}Editar Aeropuerto{% else %}Nuevo Aeropuerto{% endif %}</h1>
+    <h1>{% if object %}Editar Vuelo{% else %}Nuevo Vuelo{% endif %}</h1>
 
     <form method="post" novalidate>
         {% csrf_token %}
@@ -15,7 +15,7 @@
         {% for field in form %}
         <div class="mb-3">
             <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
-            {{ field}}
+            {{ field }}
             {% if field.help_text %}
                 <small class="form-text text-muted">{{ field.help_text }}</small>
             {% endif %}
@@ -24,7 +24,7 @@
         {% endfor %}
 
         <button type="submit" class="btn btn-success">Guardar</button>
-        <a href="{% url 'airport_list' %}" class="btn btn-secondary ms-2">Cancelar</a>
+        <a href="{% url 'flight_list' %}" class="btn btn-secondary ms-2">Cancelar</a>
     </form>
 </div>
 {% endblock %}
