@@ -9,11 +9,11 @@ class Airplane(models.Model):
     def __str__(self):
         return f"{self.model} ({self.capacity} passengers)"
 
-class Seat(models.Model): #Asiento
+class Seat(models.Model):
     airplane = models.ForeignKey(Airplane, on_delete=models.CASCADE, related_name='seats')
     number = models.CharField(max_length=10)
     row = models.IntegerField()
-    column = models.IntegerField()
+    column = models.CharField(max_length=1)
     type = models.CharField(max_length=50, blank=True, null=True)
     status = models.CharField(max_length=50, blank=True, null=True)
 
