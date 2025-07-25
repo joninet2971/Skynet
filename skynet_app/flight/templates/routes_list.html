@@ -1,0 +1,44 @@
+{% extends "home/base.html" %}
+
+{% block title %}Rutas{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1>Rutas</h1>
+    <a href="{% url 'route_create' %}" class="btn btn-primary">Nueva ruta</a>
+</div>
+
+<div class="table-container">
+    <table class="table table-striped datatable">
+        <thead>
+            <tr>
+                <th>Origen</th>
+                <th>Destino</th>
+                <th>Duración Estimada (min)</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for route in routes %}
+            <tr>
+                <td>{{ route.origin_airport.name }} ({{ route.origin_airport.code }})</td>
+                <td>{{ route.destination_airport.name }} ({{ route.destination_airport.code }})</td>
+                <td>{{ route.estimated_duration }}</td>
+                <td>
+                    <a href="{% url 'route_update' route.id %}" class="btn btn-warning btn-sm me-1">
+                        <i class="fas fa-edit"></i>
+                    </a>
+                    <button 
+                        onclick="showConfirmModal('¿Seguro que querés eliminar la ruta de {{ route.origin_airport.code }} a {{ route.destination_airport.code }}?', '{% url 'route_delete' route.id %}')" 
+                        class="btn btn-danger btn-sm">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="4" class="text-center">No hay rutas cargadas.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

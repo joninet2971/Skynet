@@ -1,0 +1,30 @@
+{% extends "home/base.html" %}
+
+{% block title %}
+    {% if object %}Editar Ruta{% else %}Nueva Ruta{% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="form-container">
+    <h1>{% if object %}Editar Ruta{% else %}Nueva Ruta{% endif %}</h1>
+
+    <form method="post" novalidate>
+        {% csrf_token %}
+        {{ form.non_field_errors }}
+
+        {% for field in form %}
+        <div class="mb-3">
+            <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+            {{ field}}
+            {% if field.help_text %}
+                <small class="form-text text-muted">{{ field.help_text }}</small>
+            {% endif %}
+            {{ field.errors }}
+        </div>
+        {% endfor %}
+
+        <button type="submit" class="btn btn-success">Guardar</button>
+        <a href="{% url 'route_list' %}" class="btn btn-secondary ms-2">Cancelar</a>
+    </form>
+</div>
+{% endblock %}

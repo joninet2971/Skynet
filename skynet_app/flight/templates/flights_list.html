@@ -1,0 +1,54 @@
+{% extends "home/base.html" %}
+
+{% block title %}Vuelos{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1>Vuelos</h1>
+    <a href="{% url 'flight_create' %}" class="btn btn-primary">Nuevo vuelo</a>
+</div>
+
+<div class="table-container">
+    <table class="table table-striped datatable">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Avión</th>
+                <th>Ruta</th>
+                <th>Salida</th>
+                <th>Llegada</th>
+                <th>Duración (min)</th>
+                <th>Estado</th>
+                <th>Precio Base</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for flight in flights %}
+            <tr>
+                <td>{{ flight.id }}</td>
+                <td>{{ flight.airplane }}</td>
+                <td>{{ flight.route }}</td>
+                <td>{{ flight.departure_time|date:"d/m/Y H:i" }}</td>
+                <td>{{ flight.arrival_time|date:"d/m/Y H:i" }}</td>
+                <td>{{ flight.duration }}</td>
+                <td>{{ flight.status }}</td>
+                <td>${{ flight.base_price }}</td>
+                <td>
+                    <a href="{% url 'flight_update' flight.id %}" class="btn btn-warning btn-sm me-1">
+                        <i class="fas fa-edit"></i>
+                    </a>
+                    <button 
+                        onclick="showConfirmModal('¿Seguro que querés eliminar el vuelo #{{ flight.id }}?', '{% url 'flight_delete' flight.id %}')" 
+                        class="btn btn-danger btn-sm">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="9" class="text-center">No hay vuelos cargados.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
