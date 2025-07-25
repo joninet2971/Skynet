@@ -1,0 +1,22 @@
+{% extends "home/base.html" %}
+{% block content %}
+
+<h2>Buscar ruta</h2>
+
+<form method="post">
+  {% csrf_token %}
+  {{ form.as_p }}
+
+  <input type="hidden" name="passenger_id" value="{{ request.GET.passenger_id }}">
+  
+  <button type="submit">Buscar y crear itinerario</button>
+</form>
+
+{% if form.errors %}
+  <div style="color:red;">
+    <strong>Errores:</strong>
+    {{ form.errors }}
+  </div>
+{% endif %}
+
+{% endblock %}
