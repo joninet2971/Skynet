@@ -5,8 +5,10 @@ from reservations.models import (
 from flight.models import Airport 
 
 class SearchRouteForm(forms.Form):
-    origin = forms.ModelChoiceField(queryset=Airport.objects.all(), label="Origin Airport")
-    destination = forms.ModelChoiceField(queryset=Airport.objects.all(), label="Destination Airport")
+    origin = forms.ModelChoiceField(queryset=Airport.objects.all())
+    destination = forms.ModelChoiceField(queryset=Airport.objects.all())
+    date = forms.DateField(widget=forms.DateInput(attrs={'type': 'date'}))
+    passengers = forms.IntegerField(min_value=1, max_value=10)
 
 class PassengerForm(forms.ModelForm):
     class Meta:

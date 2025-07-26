@@ -1,10 +1,27 @@
-{% extends 'home/base.html' %}
-
+{% extends "home/base.html" %}
 {% block content %}
-<h1>Nuevo Pasajero</h1>
-    <form method="post">
-      {% csrf_token %}
-      {{ form.as_p }}
-      <button type="submit">Continuar</button>
-    </form>
+<h2>Cargar {{ count }} pasajero{{ count|pluralize }}</h2>
+
+<form method="post">
+  {% csrf_token %}
+  {% for i in range %}
+    <fieldset style="margin-bottom: 20px; padding: 10px; border: 1px solid #ccc;">
+      <legend>Pasajero {{ i|add:1 }}</legend>
+      <label for="first_name_{{ i }}">Nombre:</label>
+      <input type="text" name="first_name_{{ i }}" id="first_name_{{ i }}" required>
+
+      <label for="last_name_{{ i }}">Apellido:</label>
+      <input type="text" name="last_name_{{ i }}" id="last_name_{{ i }}" required>
+
+      <label for="document_number_{{ i }}">DNI:</label>
+      <input type="text" name="document_number_{{ i }}" id="document_number_{{ i }}" required>
+    </fieldset>
+  {% endfor %}
+
+  <button type="submit">Guardar pasajero{{ count|pluralize }}</button>
+</form>
+
+{% if error %}
+  <p style="color: red;">{{ error }}</p>
+{% endif %}
 {% endblock %}

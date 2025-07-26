@@ -7,7 +7,6 @@
   {% csrf_token %}
   {{ form.as_p }}
 
-  <input type="hidden" name="passenger_id" value="{{ request.GET.passenger_id }}">
   
   <button type="submit">Buscar y crear itinerario</button>
 </form>

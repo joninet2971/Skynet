@@ -30,6 +30,7 @@ class FlightSegment(models.Model):#Esta es la tabla intermedia de la que hablamo
     status = models.CharField(max_length=50)
     price = models.DecimalField(max_digits=10, decimal_places=2)
 
+
     def clean(self):
         if self.seat and FlightSegment.objects.filter(seat=self.seat).exclude(id=self.id).exists():
             raise ValidationError("This seat is already assigned to another segment.")

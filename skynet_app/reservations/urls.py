@@ -3,43 +3,66 @@ from reservations.views import (
     CreatePassengerView,
     AddSegmentView,
     SearchAndCreateItineraryView,
+    ChooseItineraryView,
+    SelectItineraryView,
     CreateTicketView,
-    ViewSummary
+    ViewSummary,
+    LoadPassengersView
 )
 
 urlpatterns = [
-    # Alta de pasajero
+    # 1. Crear pasajero
     path(
-        route='passenger/create/', 
-        view=CreatePassengerView.as_view(), 
+        route='passenger/create/',
+        view=CreatePassengerView.as_view(),
         name='create_passenger'
-        ),
+    ),
 
-    # Búsqueda de ruta + creación automática de itinerario
+    # 2. Buscar ruta y guardar cadena de rutas en sesión
     path(
-        route='itinerary/search/', 
-        view=SearchAndCreateItineraryView.as_view(), 
+        route='itinerary/search/',
+        view=SearchAndCreateItineraryView.as_view(),
         name='create_itinerary'
-        ),
+    ),
 
-    # Agregar segmentos manualmente (opcional)
+    # 3. Mostrar opciones de itinerario (basado en la cadena de rutas)
     path(
-        route='itinerary/<int:itinerary_id>/add-segment/', 
-        view=AddSegmentView.as_view(), 
+        route='itinerary/choose/',
+        view=ChooseItineraryView.as_view(),
+        name='choose_itinerary'
+    ),
+
+    # 4. Confirmar selección de itinerario → crear Itinerary real y segmentos
+    path(
+        route='itinerary/select/',
+        view=SelectItineraryView.as_view(),
+        name='select_itinerary'
+    ),
+
+    # 5. Agregar segmentos manualmente (opcional)
+    path(
+        route='itinerary/<int:itinerary_id>/add-segment/',
+        view=AddSegmentView.as_view(),
         name='add_segment'
-        ),
+    ),
 
-    # Crear ticket automáticamente
+    # 6. Crear ticket automáticamente
     path(
-        route='itinerary/<int:itinerary_id>/create-ticket/', 
-        view=CreateTicketView.as_view(), 
+        route='itinerary/<int:itinerary_id>/create-ticket/',
+        view=CreateTicketView.as_view(),
         name='create_ticket'
-        ),
+    ),
 
-    # Ver resumen final del itinerario
+    # 7. Ver resumen final del itinerario
     path(
-        route='itinerary/<int:itinerary_id>/summary/', 
-        view=ViewSummary.as_view(), 
+        route='itinerary/<int:itinerary_id>/summary/',
+        view=ViewSummary.as_view(),
         name='view_summary'
-        ),
+    ),
+
+    path(
+    route='passenger/load/',
+    view=LoadPassengersView.as_view(),
+    name='load_passengers'
+),
 ]
