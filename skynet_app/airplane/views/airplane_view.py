@@ -5,6 +5,7 @@ from ..repositories import airplane_repository
 from django.core.exceptions import ValidationError
 from django.contrib import messages
 
+
 def create_airplane_view(request):
     if request.method == 'POST':
         form = AirplaneForm(request.POST)
