@@ -262,57 +262,30 @@
         </div>
         <ul class="nav flex-column">
             <li class="nav-item">
-                <a class="nav-link active" href="">
+                <a class="nav-link active" href="{% url 'airport_list' %}">
                     <i class="fas fa-tachometer-alt"></i>
-                    <span>Panel</span>
+                    <span>Airport</span>
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="#">
+                <a class="nav-link" href="{% url 'route_list' %}">
                     <i class="fas fa-plane-departure"></i>
-                    <span>Vuelos</span>
+                    <span>Routes</span>
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="">
+                <a class="nav-link" href="{% url 'flight_list' %}">
                     <i class="fas fa-users"></i>
-                    <span>Pasajeros</span>
+                    <span>Flights</span>
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="#">
-                    <i class="fas fa-ticket-alt"></i>
-                    <span>Reservas</span>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="#">
+                <a class="nav-link" href="{% url 'airplane_list' %}">
                     <i class="fas fa-plane"></i>
                     <span>Aviones</span>
                 </a>
             </li>
-            <li class="nav-item">
-                <a class="nav-link" href="#">
-                    <i class="fas fa-chair"></i>
-                    <span>Asientos</span>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="#">
-                    <i class="fas fa-file-alt"></i>
-                    <span>Reportes</span>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="#">
-                    <i class="fas fa-cog"></i>
-                    <span>Configuración</span>
-                </a>
-            </li>
         </ul>
-        <div class="sidebar-footer">
-            <span> AeroLine</span>
-        </div>
     </div>
 
     <!-- Main Content -->
