@@ -7,6 +7,8 @@
 <p><strong>Fecha:</strong> {{ date }}</p>
 <p><strong>Pasajeros:</strong> {{ passengers }}</p>
 
+<p><strong>Rutas encontradas:</strong></p>
+
 {% if itineraries %}
   <form method="post" action="{% url 'select_itinerary' %}">
     {% csrf_token %}
@@ -15,7 +17,13 @@
         <p><strong>Ruta:</strong> {{ itin.route_summary }}</p>
         <p><strong>Duración:</strong> {{ itin.duration }} minutos</p>
         <p><strong>Precio Total:</strong> ${{ itin.total_price }}</p>
-        <button type="submit" name="option_id" value="{{ itin.id }}">Seleccionar este itinerario</button>
+
+        {% with forloop.counter0 as idx %}
+          {% for rid in route_options.idx %}
+            <input type="hidden" name="routes_{{ idx }}" value="{{ rid }}">
+          {% endfor %}
+          <button type="submit" name="option_idx" value="{{ idx }}">Seleccionar este itinerario</button>
+        {% endwith %}
       </div>
     {% endfor %}
   </form>

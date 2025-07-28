@@ -4,12 +4,17 @@ from airplane.models import Seat
 from flight.models import Flight
 
 class Passenger(models.Model):
+    STATUS_CHOICES = [
+        ('dni', 'DNI'),
+        ('passport', 'Pasaporte'),
+    ]
+
     name = models.CharField(max_length=100)
     document = models.CharField(max_length=50, unique=True)
     email = models.EmailField()
     phone = models.CharField(max_length=20, blank=True, null=True)
     birth_date = models.DateField(blank=True, null=True)
-    document_type = models.CharField(max_length=50, blank=True, null=True)
+    document_type = models.CharField(max_length=50, choices=STATUS_CHOICES, blank=True, null=True)
 
     def __str__(self):
         return f"{self.name} ({self.document})"
@@ -29,7 +34,6 @@ class FlightSegment(models.Model):#Esta es la tabla intermedia de la que hablamo
     seat = models.OneToOneField(Seat, on_delete=models.SET_NULL, null=True, blank=True)
     status = models.CharField(max_length=50)
     price = models.DecimalField(max_digits=10, decimal_places=2)
-
 
     def clean(self):
         if self.seat and FlightSegment.objects.filter(seat=self.seat).exclude(id=self.id).exists():

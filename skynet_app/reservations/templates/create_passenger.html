@@ -5,21 +5,40 @@
 <form method="post">
   {% csrf_token %}
   {% for i in range %}
-    <fieldset style="margin-bottom: 20px; padding: 10px; border: 1px solid #ccc;">
+    <fieldset>
       <legend>Pasajero {{ i|add:1 }}</legend>
-      <label for="first_name_{{ i }}">Nombre:</label>
-      <input type="text" name="first_name_{{ i }}" id="first_name_{{ i }}" required>
 
-      <label for="last_name_{{ i }}">Apellido:</label>
-      <input type="text" name="last_name_{{ i }}" id="last_name_{{ i }}" required>
+      <label for="name_{{ i }}">Nombre completo:</label>
+      <input type="text" name="name_{{ i }}" required>
 
-      <label for="document_number_{{ i }}">DNI:</label>
-      <input type="text" name="document_number_{{ i }}" id="document_number_{{ i }}" required>
+      <label for="document_{{ i }}">Documento:</label>
+      <input type="text" name="document_{{ i }}" required>
+
+      <label for="email_{{ i }}">Email:</label>
+      <input type="email" name="email_{{ i }}" required>
+
+      <label for="phone_{{ i }}">Teléfono:</label>
+      <input type="text" name="phone_{{ i }}">
+
+      <label for="birth_date_{{ i }}">Fecha de nacimiento:</label>
+      <input type="date" name="birth_date_{{ i }}">
+
+      <label for="document_type_{{ i }}">Tipo de documento:</label>
+      <select name="document_type_{{ i }}">
+        <option value="">---------</option>
+        <option value="dni">DNI</option>
+        <option value="passport">Pasaporte</option>
+      </select>
     </fieldset>
   {% endfor %}
-
-  <button type="submit">Guardar pasajero{{ count|pluralize }}</button>
+  <button type="submit">Guardar</button>
 </form>
+
+{% if error %}
+  <p style="color: red;">{{ error }}</p>
+{% endif %}
+
+
 
 {% if error %}
   <p style="color: red;">{{ error }}</p>

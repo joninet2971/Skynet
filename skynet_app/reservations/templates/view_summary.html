@@ -1,14 +1,14 @@
-{% extends "base.html" %}
+{% extends "home/base.html" %}
 {% block content %}
 <h2>Resumen del Itinerario</h2>
 
-<h3>Pasajero</h3>
-<p>{{ passenger.full_name }}</p>
+<h4>Pasajero</h4>
+<p>{{ passenger.name }}</p>
 
-<h3>Segmentos</h3>
+<h4>Segmentos</h4>
 <ul>
   {% for seg in segments %}
-    <li>{{ seg.flight.origin }} ➡️ {{ seg.flight.destination }} - Asiento: {{ seg.seat }} - Precio: ${{ seg.price }}</li>
+    <li>{{ seg.flight.origin }} {{ seg.flight.destination }} - {{ seg.seat }} - Precio: ${{ seg.price }}</li>
   {% endfor %}
 </ul>
 

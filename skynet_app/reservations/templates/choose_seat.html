@@ -1,0 +1,36 @@
+{% extends "home/base.html" %}
+{% block content %}
+<h2>Selección de Asientos</h2>
+<form method="post">
+  {% csrf_token %}
+
+  <table border="1" cellpadding="10">
+    <thead>
+      <tr>
+        <th>Pasajero</th>
+        <th>Vuelo</th>
+        <th>Asiento Disponible</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for item in seat_data %}
+        <tr>
+          <td>{{ item.passenger.name }}</td>
+          <td>{{ item.flight.route.origin_airport.code }} → {{ item.flight.route.destination_airport.code }} - {{ item.flight.departure_time }}</td>
+          <td>
+            <select name="seat_{{ item.key }}" required>
+              <option value="">-- Seleccionar asiento --</option>
+              {% for seat in item.seats %}
+                <option value="{{ seat.id }}">Fila {{ seat.row }} Columna {{ seat.column }}</option>
+              {% endfor %}
+            </select>
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <br>
+  <button type="submit">Confirmar Selección</button>
+</form>
+{% endblock %}
