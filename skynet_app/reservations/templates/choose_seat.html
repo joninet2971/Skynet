@@ -1,36 +1,73 @@
 {% extends "home/base.html" %}
+{% load widget_tweaks %}
+
+{% block title %}Seleccionar asientos - Skynet{% endblock %}
+{% block header_title %}Seleccionar Asientos{% endblock %}
+
 {% block content %}
-<h2>Selección de Asientos</h2>
-<form method="post">
-  {% csrf_token %}
+<div class="card">
+    <div class="card-header">
+        <h5 class="mb-0"><i class="fas fa-chair me-2"></i>Asignación de Asientos</h5>
+    </div>
 
-  <table border="1" cellpadding="10">
-    <thead>
-      <tr>
-        <th>Pasajero</th>
-        <th>Vuelo</th>
-        <th>Asiento Disponible</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for item in seat_data %}
-        <tr>
-          <td>{{ item.passenger.name }}</td>
-          <td>{{ item.flight.route.origin_airport.code }} → {{ item.flight.route.destination_airport.code }} - {{ item.flight.departure_time }}</td>
-          <td>
-            <select name="seat_{{ item.key }}" required>
-              <option value="">-- Seleccionar asiento --</option>
-              {% for seat in item.seats %}
-                <option value="{{ seat.id }}">Fila {{ seat.row }} Columna {{ seat.column }}</option>
-              {% endfor %}
-            </select>
-          </td>
-        </tr>
-      {% endfor %}
-    </tbody>
-  </table>
+    <div class="card-body">
+        <form method="post" class="needs-validation" novalidate>
+            {% csrf_token %}
+            <div class="table-responsive">
+                <table class="table table-bordered align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Pasajero</th>
+                            <th>Vuelo</th>
+                            <th>Asiento Disponible</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in seat_data %}
+                        <tr>
+                            <td>{{ item.passenger.name }}</td>
+                            <td>
+                                {{ item.flight.route.origin_airport.code }}
+                                → {{ item.flight.route.destination_airport.code }} <br>
+                                <small class="text-muted">{{ item.flight.departure_time }}</small>
+                            </td>
+                            <td>
+                                <select name="seat_{{ item.key }}" class="form-select" required>
+                                    <option value="">-- Seleccionar asiento --</option>
+                                    {% for seat in item.seats %}
+                                        <option value="{{ seat.id }}">
+                                            Fila {{ seat.row }} - Columna {{ seat.column }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
 
-  <br>
-  <button type="submit">Confirmar Selección</button>
-</form>
+            <div class="text-end mt-4">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-check me-2"></i>Confirmar Selección
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const forms = document.querySelectorAll('.needs-validation');
+        Array.from(forms).forEach(form => {
+            form.addEventListener('submit', function (event) {
+                if (!form.checkValidity()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+                form.classList.add('was-validated');
+            }, false);
+        });
+    });
+</script>
 {% endblock %}

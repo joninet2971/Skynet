@@ -1,34 +1,52 @@
 {% extends "home/base.html" %}
+{% load static %}
+{% load widget_tweaks %}
+
+{% block title %}Opciones de Itinerario - Skynet{% endblock %}
+{% block header_title %}Seleccionar Itinerario{% endblock %}
+
 {% block content %}
-<h2>Opciones de Itinerario</h2>
+<div class="card">
+    <div class="card-header">
+        <h5 class="mb-0"><i class="fas fa-route me-2"></i>Opciones de Itinerario</h5>
+    </div>
+    <div class="card-body">
 
-<p><strong>Origen:</strong> {{ origin }}</p>
-<p><strong>Destino:</strong> {{ destination }}</p>
-<p><strong>Fecha:</strong> {{ date }}</p>
-<p><strong>Pasajeros:</strong> {{ passengers }}</p>
+        <p><strong>Origen:</strong> {{ origin }}</p>
+        <p><strong>Destino:</strong> {{ destination }}</p>
+        <p><strong>Fecha:</strong> {{ date }}</p>
+        <p><strong>Pasajeros:</strong> {{ passengers }}</p>
 
-<p><strong>Rutas encontradas:</strong></p>
+        {% if itineraries %}
+        <form method="post" action="{% url 'select_itinerary' %}">
+            {% csrf_token %}
 
-{% if itineraries %}
-  <form method="post" action="{% url 'select_itinerary' %}">
-    {% csrf_token %}
-    {% for itin in itineraries %}
-      <div style="border: 1px solid #ccc; padding: 15px; margin: 15px 0; border-radius: 5px;">
-        <p><strong>Ruta:</strong> {{ itin.route_summary }}</p>
-        <p><strong>Duración:</strong> {{ itin.duration }} minutos</p>
-        <p><strong>Precio Total:</strong> ${{ itin.total_price }}</p>
+            {% for itin in itineraries %}
+            <div class="card mb-3 shadow-sm">
+                <div class="card-body">
+                    <h6 class="card-title"><i class="fas fa-plane-departure me-2"></i>Ruta {{ itin.id }}</h6>
+                    <p><strong>Ruta:</strong> {{ itin.route_summary }}</p>
+                    <p><strong>Duración:</strong> {{ itin.duration }} minutos</p>
+                    <p><strong>Precio Total:</strong> ${{ itin.total_price }}</p>
 
-        {% with forloop.counter0 as idx %}
-          {% for rid in route_options.idx %}
-            <input type="hidden" name="routes_{{ idx }}" value="{{ rid }}">
-          {% endfor %}
-          <button type="submit" name="option_idx" value="{{ idx }}">Seleccionar este itinerario</button>
-        {% endwith %}
-      </div>
-    {% endfor %}
-  </form>
-{% else %}
-  <p>No se encontraron rutas disponibles para los parámetros indicados.</p>
-{% endif %}
+                    {% with forloop.counter0 as idx %}
+                        {% for rid in route_options.idx %}
+                            <input type="hidden" name="routes_{{ idx }}" value="{{ rid }}">
+                        {% endfor %}
+                        <button type="submit" name="option_idx" value="{{ idx }}" class="btn btn-primary">
+                            <i class="fas fa-check-circle me-1"></i>Seleccionar este itinerario
+                        </button>
+                    {% endwith %}
+                </div>
+            </div>
+            {% endfor %}
+        </form>
+        {% else %}
+            <div class="alert alert-warning mt-4">
+                <i class="fas fa-exclamation-circle me-2"></i>No se encontraron rutas disponibles para los parámetros indicados.
+            </div>
+        {% endif %}
 
+    </div>
+</div>
 {% endblock %}

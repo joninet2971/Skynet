@@ -1,46 +1,96 @@
 {% extends "home/base.html" %}
+{% load widget_tweaks %}
+
+{% block title %}Cargar {{ count }} pasajero{{ count|pluralize }} - Skynet{% endblock %}
+{% block header_title %}Registrar Pasajeros{% endblock %}
+
 {% block content %}
-<h2>Cargar {{ count }} pasajero{{ count|pluralize }}</h2>
+<div class="card">
+    <div class="card-header">
+        <div class="row align-items-center">
+            <div class="col-md-6">
+                <h5 class="mb-0"><i class="fas fa-users me-2"></i>Formulario de Pasajeros</h5>
+            </div>
+            <div class="col-md-6 text-end">
+                <a href="{% url 'home' %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>Volver
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="card-body">
+        <form method="post" class="needs-validation" novalidate>
+            {% csrf_token %}
 
-<form method="post">
-  {% csrf_token %}
-  {% for i in range %}
-    <fieldset>
-      <legend>Pasajero {{ i|add:1 }}</legend>
+            {% for i in range %}
+            <fieldset class="border rounded-3 p-3 mb-4">
+                <legend class="float-none w-auto px-3">Pasajero {{ i|add:1 }}</legend>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="name_{{ i }}" class="form-label">Nombre completo <span class="text-danger">*</span></label>
+                        <input type="text" name="name_{{ i }}" id="name_{{ i }}" class="form-control" placeholder="Ej. Juan Pérez" required>
+                        <div class="invalid-feedback">Este campo es obligatorio.</div>
+                    </div>
 
-      <label for="name_{{ i }}">Nombre completo:</label>
-      <input type="text" name="name_{{ i }}" required>
+                    <div class="col-md-6 mb-3">
+                        <label for="document_{{ i }}" class="form-label">Documento <span class="text-danger">*</span></label>
+                        <input type="text" name="document_{{ i }}" id="document_{{ i }}" class="form-control" placeholder="Ej. 30123456" required>
+                        <div class="invalid-feedback">Este campo es obligatorio.</div>
+                    </div>
 
-      <label for="document_{{ i }}">Documento:</label>
-      <input type="text" name="document_{{ i }}" required>
+                    <div class="col-md-6 mb-3">
+                        <label for="email_{{ i }}" class="form-label">Email <span class="text-danger">*</span></label>
+                        <input type="email" name="email_{{ i }}" id="email_{{ i }}" class="form-control" placeholder="Ej. ejemplo@mail.com" required>
+                        <div class="invalid-feedback">Ingrese un email válido.</div>
+                    </div>
 
-      <label for="email_{{ i }}">Email:</label>
-      <input type="email" name="email_{{ i }}" required>
+                    <div class="col-md-6 mb-3">
+                        <label for="phone_{{ i }}" class="form-label">Teléfono</label>
+                        <input type="text" name="phone_{{ i }}" id="phone_{{ i }}" class="form-control" placeholder="Opcional">
+                    </div>
 
-      <label for="phone_{{ i }}">Teléfono:</label>
-      <input type="text" name="phone_{{ i }}">
+                    <div class="col-md-6 mb-3">
+                        <label for="birth_date_{{ i }}" class="form-label">Fecha de nacimiento</label>
+                        <input type="date" name="birth_date_{{ i }}" id="birth_date_{{ i }}" class="form-control">
+                    </div>
 
-      <label for="birth_date_{{ i }}">Fecha de nacimiento:</label>
-      <input type="date" name="birth_date_{{ i }}">
+                    <div class="col-md-6 mb-3">
+                        <label for="document_type_{{ i }}" class="form-label">Tipo de documento</label>
+                        <select name="document_type_{{ i }}" id="document_type_{{ i }}" class="form-select">
+                            <option value="">---------</option>
+                            <option value="dni">DNI</option>
+                            <option value="passport">Pasaporte</option>
+                        </select>
+                    </div>
+                </div>
+            </fieldset>
+            {% endfor %}
 
-      <label for="document_type_{{ i }}">Tipo de documento:</label>
-      <select name="document_type_{{ i }}">
-        <option value="">---------</option>
-        <option value="dni">DNI</option>
-        <option value="passport">Pasaporte</option>
-      </select>
-    </fieldset>
-  {% endfor %}
-  <button type="submit">Guardar</button>
-</form>
+            <div class="text-end">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save me-2"></i>Guardar pasajero{{ count|pluralize }}
+                </button>
+            </div>
+        </form>
 
-{% if error %}
-  <p style="color: red;">{{ error }}</p>
-{% endif %}
+        {% if error %}
+        <div class="alert alert-danger mt-4">{{ error }}</div>
+        {% endif %}
+    </div>
+</div>
 
-
-
-{% if error %}
-  <p style="color: red;">{{ error }}</p>
-{% endif %}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const forms = document.querySelectorAll('.needs-validation');
+        Array.from(forms).forEach(form => {
+            form.addEventListener('submit', function (event) {
+                if (!form.checkValidity()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+                form.classList.add('was-validated');
+            }, false);
+        });
+    });
+</script>
 {% endblock %}

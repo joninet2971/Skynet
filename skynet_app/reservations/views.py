@@ -1,4 +1,5 @@
 # Django imports
+from django.contrib import messages
 from django.views.generic import FormView, TemplateView
 from django.shortcuts import redirect, get_object_or_404, render
 from django.views import View
@@ -26,6 +27,7 @@ from reservations.services.route_finder import find_route_chain
 
     
 # Vista para cargar múltiples pasajeros en base a la cantidad seleccionada
+
 class LoadPassengersView(View):
     template_name = "create_passenger.html"
 
@@ -34,8 +36,9 @@ class LoadPassengersView(View):
         return render(request, self.template_name, {
             "form": PassengerForm(),
             "count": passenger_count,
-            "range": range(passenger_count) 
+            "range": range(passenger_count)
         })
+
     def post(self, request):
         passenger_count = int(request.session.get("passenger_count", 1))
         passengers = []
@@ -49,7 +52,7 @@ class LoadPassengersView(View):
                 'birth_date': request.POST.get(f'birth_date_{i}') or None,
                 'document_type': request.POST.get(f'document_type_{i}') or None,
             }
-            document = request.POST.get(f'document_{i}')
+            document = form_data["document"]
             passenger = Passenger.objects.filter(document=document).first()
 
             if passenger:
@@ -60,20 +63,21 @@ class LoadPassengersView(View):
                     passenger = PassengerRepository.create(**form.cleaned_data)
                     passengers.append(passenger)
                 else:
+                    messages.error(request, f"Error en el pasajero {i + 1}. Verifica los datos.")
                     return render(request, self.template_name, {
                         "form": form,
                         "count": passenger_count,
-                        "range": range(passenger_count),
-                        "error": f"Error en el pasajero {i + 1}"
+                        "range": range(passenger_count)
                     })
 
-
-
         request.session['passenger_ids'] = [p.id for p in passengers]
+        messages.success(request, f"{len(passengers)} pasajero(s) cargado(s) correctamente.")
         return redirect('choose_seat_view')
 
 
 # Vista para buscar rutas posibles y guardar los datos en sesión
+
+
 class SearchAndCreateItineraryView(FormView):
     template_name = 'search_route.html'
     form_class = SearchRouteForm
@@ -81,14 +85,16 @@ class SearchAndCreateItineraryView(FormView):
     def form_valid(self, form):
         origin = form.cleaned_data['origin']
         destination = form.cleaned_data['destination']
+        fecha = form.cleaned_data['date']
+        passenger_count = form.cleaned_data['passengers']
 
+        # Buscar posibles rutas
         route_chains = find_route_chain(origin.code, destination.code)
 
         if not route_chains:
-            form.add_error(None, "No se encontró una ruta válida entre esos aeropuertos.")
+            messages.error(self.request, "No se encontró una ruta válida entre esos aeropuertos.")
             return self.form_invalid(form)
 
-        fecha = form.cleaned_data['date']
         rutas_validas = []
 
         for chain in route_chains:
@@ -108,15 +114,20 @@ class SearchAndCreateItineraryView(FormView):
                 rutas_validas.append([r.id for r in chain])
 
         if not rutas_validas:
-            form.add_error(None, "No hay vuelos disponibles en esa fecha.")
+            messages.error(self.request, "No hay vuelos disponibles en esa fecha.")
             return self.form_invalid(form)
-        print('route_chains',route_chains)
-        print('rutas_validas',rutas_validas)
+
+        # Guardar en sesión
         self.request.session["route_chain_ids_list"] = rutas_validas
         self.request.session["search_date"] = str(fecha)
-        self.request.session["passenger_count"] = form.cleaned_data['passengers']
+        self.request.session["passenger_count"] = passenger_count
 
+        messages.success(self.request, "Itinerarios encontrados correctamente.")
         return redirect("choose_itinerary")
+
+    def form_invalid(self, form):
+        messages.error(self.request, "Por favor corregí los errores del formulario.")
+        return super().form_invalid(form)
 
 
 
@@ -178,28 +189,22 @@ class SelectItineraryView(View):
         return redirect("load_passengers")  # Paso siguiente: cargar pasajeros
     
 # Vista que permite al usuario seleccionar manualmente los asientos
+
 class ChooseSeatView(View):
     template_name = "choose_seat.html"
 
     def get(self, request):
         passenger_ids = request.session.get("passenger_ids", [])
         route_ids = request.session.get("route_chain", [])
-        print('pasajeros',passenger_ids)
-        print('routes',route_ids)
 
         passengers = Passenger.objects.filter(id__in=passenger_ids)
         routes = Route.objects.filter(id__in=route_ids)
         flights = [Flight.objects.filter(route=route, status="active").first() for route in routes]
-        print("passengers",passengers)
-        print('routes',routes)
-        print('flights',flights)
+
         seat_data = []
 
         for p_index, passenger in enumerate(passengers):
-            print('p_index',p_index)
             for f_index, flight in enumerate(flights):
-                print('f_index',f_index)
-                # Detectar asientos ya asignados en este vuelo
                 assigned_seat_ids = FlightSegment.objects.filter(
                     flight=flight,
                     seat__isnull=False
@@ -231,7 +236,6 @@ class ChooseSeatView(View):
         last_itinerary = None
 
         for p_index, passenger in enumerate(passengers):
-            # Crear el itinerario por pasajero
             reservation_code = str(uuid.uuid4())[:8].upper()
             while Itinerary.objects.filter(reservation_code=reservation_code).exists():
                 reservation_code = str(uuid.uuid4())[:8].upper()
@@ -248,12 +252,11 @@ class ChooseSeatView(View):
                 seat = Seat.objects.filter(id=seat_id).first() if seat_id else None
 
                 if not seat:
-                    errores.append(f"No se seleccionó asiento para {passenger.name} en vuelo {flight}")
+                    errores.append(f"Asiento no seleccionado para {passenger.name} en vuelo {flight}")
                     continue
 
-                # Verificamos que el asiento no esté ocupado
                 if FlightSegment.objects.filter(seat=seat).exists():
-                    errores.append(f"El asiento {seat.row}{seat.column} ya fue asignado")
+                    errores.append(f"Asiento {seat.row}{seat.column} ya fue asignado.")
                     continue
 
                 FlightSegmentRepository.create(
@@ -265,8 +268,11 @@ class ChooseSeatView(View):
                 )
 
         if errores:
-            return render(request, "error.html", {"message": errores})
+            for err in errores:
+                messages.error(request, err)
+            return redirect("choose_seat_view")
 
+        messages.success(request, "Asientos asignados correctamente.")
         return redirect("view_summary", itinerary_id=last_itinerary.id)
 
 
