@@ -31,13 +31,14 @@ class Itinerary(models.Model): #Este vendria a ser reservation pero para varios 
 class FlightSegment(models.Model):#Esta es la tabla intermedia de la que hablamos, donde cargamos varios vuelos a la misma reserva o intinerario
     itinerary = models.ForeignKey(Itinerary, on_delete=models.CASCADE, related_name='segments')
     flight = models.ForeignKey(Flight, on_delete=models.CASCADE)
-    seat = models.OneToOneField(Seat, on_delete=models.SET_NULL, null=True, blank=True)
+    seat = models.ForeignKey(Seat, on_delete=models.SET_NULL, null=True, blank=True)
     status = models.CharField(max_length=50)
     price = models.DecimalField(max_digits=10, decimal_places=2)
 
     def clean(self):
-        if self.seat and FlightSegment.objects.filter(seat=self.seat).exclude(id=self.id).exists():
-            raise ValidationError("This seat is already assigned to another segment.")
+        if self.seat and FlightSegment.objects.filter(seat=self.seat, flight=self.flight).exclude(id=self.id).exists():
+            raise ValidationError("Este asiento ya está asignado en este vuelo.")
+
 
     def save(self, *args, **kwargs):
         self.clean()

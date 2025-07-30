@@ -12,6 +12,8 @@ from reservations.repositories.reservations import (
 from reservations.services.route_finder import find_route_chain
 from collections import namedtuple
 import uuid
+from django.db import transaction
+
 
 # NamedTuple para opciones de itinerario
 ItineraryOption = namedtuple("ItineraryOption", ["id", "route_summary", "duration", "total_price"])
@@ -303,60 +305,6 @@ class SeatService:
 
 class ReservationService:
     @staticmethod
-    def create_reservations_with_seats(passenger_ids: List[int], route_ids: List[int], 
-                                     seat_selections: dict) -> Itinerary:
-        """Crea reservas con asientos seleccionados manualmente"""
-        passengers = Passenger.objects.filter(id__in=passenger_ids)
-        routes = Route.objects.filter(id__in=route_ids)
-        flights = [Flight.objects.filter(route=route, status="active").first() for route in routes]
-
-        errores = []
-        last_itinerary = None
-
-        for p_index, passenger in enumerate(passengers):
-            reservation_code = ReservationService._generate_unique_reservation_code()
-
-            itinerary = ItineraryService.create(
-                passenger=passenger,
-                reservation_code=reservation_code
-            )
-            last_itinerary = itinerary
-
-            for f_index, flight in enumerate(flights):
-                if not flight:
-                    errores.append(f"Vuelo no encontrado para la ruta {f_index}")
-                    continue
-                    
-                key = f"{p_index}_{f_index}"
-                seat_id = seat_selections.get(f"seat_{key}")
-                
-                if not seat_id:
-                    errores.append(f"Asiento no seleccionado para {passenger.name} en vuelo {flight}")
-                    continue
-
-                seat = Seat.objects.filter(id=seat_id).first()
-                if not seat:
-                    errores.append(f"Asiento no válido para {passenger.name}")
-                    continue
-
-                if not SeatService.is_seat_available(seat.id, flight):
-                    errores.append(f"Asiento {seat.row}{seat.column} ya fue asignado.")
-                    continue
-
-                FlightSegmentService.create(
-                    itinerary=itinerary,
-                    flight=flight,
-                    seat=seat,
-                    price=flight.base_price,
-                    status="confirmed"
-                )
-
-        if errores:
-            raise ValidationError("; ".join(errores))
-
-        return last_itinerary
-
-    @staticmethod
     def create_automatic_reservations(passenger_ids: List[int], route_ids: List[int]) -> Itinerary:
         """Crea reservas automáticas asignando el primer asiento disponible"""
         passengers = Passenger.objects.filter(id__in=passenger_ids)
@@ -410,3 +358,67 @@ class ReservationService:
         while Itinerary.objects.filter(reservation_code=reservation_code).exists():
             reservation_code = str(uuid.uuid4())[:8].upper()
         return reservation_code
+    
+    @staticmethod
+    def create_reservations_with_seats(passenger_ids: List[int], route_ids: List[int], post_data: dict) -> Itinerary:
+
+        with transaction.atomic():
+            passengers = Passenger.objects.filter(id__in=passenger_ids)
+            routes = Route.objects.filter(id__in=route_ids)
+            flights = [
+                Flight.objects.filter(route=route, status="active").first()
+                for route in routes
+            ]
+
+            seat_assignments = {}  # { flight.id: set(seat_ids) }
+            created_itineraries = []
+            errores = []
+
+            for p_index, passenger in enumerate(passengers):
+                reservation_code = ReservationService._generate_unique_reservation_code()
+
+                itinerary = ItineraryService.create(
+                    passenger=passenger,
+                    reservation_code=reservation_code
+                )
+                created_itineraries.append(itinerary)
+
+                for f_index, flight in enumerate(flights):
+                    if not flight:
+                        errores.append(f"Vuelo no encontrado para la ruta {f_index}")
+                        continue
+
+                    key = f"{p_index}_{f_index}"
+                    seat_id = post_data.get(f"seat_{key}")
+
+                    if not seat_id:
+                        errores.append(f"Falta asignar asiento para {passenger.name} en vuelo {flight}")
+                        continue
+
+                    assigned = seat_assignments.setdefault(flight.id, set())
+                    if seat_id in assigned:
+                        errores.append(f"Asiento duplicado en vuelo {flight} para distintos pasajeros.")
+                        continue
+                    assigned.add(seat_id)
+
+                    seat = Seat.objects.filter(id=seat_id).first()
+                    if not seat:
+                        errores.append(f"Asiento no válido para {passenger.name}")
+                        continue
+
+                    if FlightSegment.objects.filter(flight=flight, seat=seat).exists():
+                        errores.append(f"Asiento {seat.row}{seat.column} ya está ocupado.")
+                        continue
+
+                    FlightSegmentRepository.create(
+                        itinerary=itinerary,
+                        flight=flight,
+                        seat=seat,
+                        price=flight.base_price,
+                        status="confirmed"
+                    )
+
+            if errores:
+                raise ValidationError(" | ".join(errores))
+
+            return created_itineraries

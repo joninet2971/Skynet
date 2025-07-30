@@ -4,7 +4,7 @@ from reservations.views import (
     ChooseItineraryView,
     SelectItineraryView,
     CreateTicketView,
-    ViewSummary,
+    GroupSummaryView,
     LoadPassengersView,
     GenerateItineraryView,
     ChooseSeatView
@@ -43,10 +43,11 @@ urlpatterns = [
 
     # Ver resumen final del itinerario
     path(
-        route='itinerary/<int:itinerary_id>/summary/',
-        view=ViewSummary.as_view(),
-        name='view_summary'
+        route='resumen/grupo/',
+        view=GroupSummaryView.as_view(),
+        name='group_summary'
     ),
+
 
     path(
     route='passenger/load/',

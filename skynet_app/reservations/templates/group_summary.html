@@ -1,0 +1,41 @@
+{% extends "home/base.html" %}
+{% block content %}
+
+<h2>Resumen de Reservas del Grupo</h2>
+
+{% if group_itineraries %}
+  {% for itin in group_itineraries %}
+    <div class="card mb-4 shadow">
+      <div class="card-header bg-primary text-white">
+        <strong>Pasajero:</strong> {{ itin.passenger.name }} —
+        <strong>Código de Reserva:</strong> {{ itin.reservation_code }}
+      </div>
+      <div class="card-body">
+        <p><strong>Documento:</strong> {{ itin.passenger.document }}</p>
+        <p><strong>Email:</strong> {{ itin.passenger.email }}</p>
+        <p><strong>Teléfono:</strong> {{ itin.passenger.phone }}</p>
+        <p><strong>Fecha de nacimiento:</strong> {{ itin.passenger.birth_date }}</p>
+
+        <hr>
+        <h5>Vuelos asignados:</h5>
+        <ul class="list-group">
+          {% for f in itin.flights %}
+            <li class="list-group-item">
+              <strong>{{ f.origin }} → {{ f.destination }}</strong><br>
+              <small>Salida: {{ f.departure_time }} — Llegada: {{ f.arrival_time }}</small><br>
+              <small>Duración: {{ f.duration }} min — Asiento: {{ f.seat }}</small><br>
+              <small>Precio: ${{ f.price }}</small>
+            </li>
+          {% endfor %}
+        </ul>
+
+        <p class="mt-3"><strong>Total pagado:</strong> ${{ itin.total_price }}</p>
+        <p><strong>Código de ticket:</strong> {{ itin.ticket }}</p>
+      </div>
+    </div>
+  {% endfor %}
+{% else %}
+  <p>No se encontraron itinerarios.</p>
+{% endif %}
+
+{% endblock %}
