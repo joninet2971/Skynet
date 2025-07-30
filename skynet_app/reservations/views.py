@@ -6,20 +6,16 @@ from django.views import View
 from collections import namedtuple
 import uuid
 
-# Formularios y Repositorios
+# Formularios
 from reservations.forms import PassengerForm, SearchRouteForm
-from reservations.repositories.reservations import (
-    PassengerRepository, FlightSegmentRepository, TicketRepository
-)
 
-# Modelos
-from flight.models import Flight, Route
-from airplane.models import Seat
-from reservations.models import Itinerary, Passenger, FlightSegment
+# Modelos (solo para imports necesarios)
+from reservations.models import Itinerary
 
 # Servicios
 from reservations.services.reservations import (
-    ItineraryService, FlightSegmentService, TicketService
+    ItineraryService, FlightSegmentService, TicketService, PassengerService,
+    RouteService, SeatService, ReservationService
 )
 
 # Algoritmo para encontrar rutas
@@ -27,7 +23,6 @@ from reservations.services.route_finder import find_route_chain
 
     
 # Vista para cargar múltiples pasajeros en base a la cantidad seleccionada
-
 class LoadPassengersView(View):
     template_name = "create_passenger.html"
 
@@ -53,15 +48,25 @@ class LoadPassengersView(View):
                 'document_type': request.POST.get(f'document_type_{i}') or None,
             }
             document = form_data["document"]
-            passenger = Passenger.objects.filter(document=document).first()
+            
+            # Buscar pasajero existente usando el servicio
+            existing_passenger = PassengerService.get_by_document(document)
 
-            if passenger:
-                passengers.append(passenger)
+            if existing_passenger:
+                passengers.append(existing_passenger)
             else:
                 form = PassengerForm(form_data)
                 if form.is_valid():
-                    passenger = PassengerRepository.create(**form.cleaned_data)
-                    passengers.append(passenger)
+                    try:
+                        passenger = PassengerService.create(form.cleaned_data)
+                        passengers.append(passenger)
+                    except Exception as e:
+                        messages.error(request, f"Error creando pasajero {i + 1}: {str(e)}")
+                        return render(request, self.template_name, {
+                            "form": form,
+                            "count": passenger_count,
+                            "range": range(passenger_count)
+                        })
                 else:
                     messages.error(request, f"Error en el pasajero {i + 1}. Verifica los datos.")
                     return render(request, self.template_name, {
@@ -76,8 +81,6 @@ class LoadPassengersView(View):
 
 
 # Vista para buscar rutas posibles y guardar los datos en sesión
-
-
 class SearchAndCreateItineraryView(FormView):
     template_name = 'search_route.html'
     form_class = SearchRouteForm
@@ -88,51 +91,38 @@ class SearchAndCreateItineraryView(FormView):
         fecha = form.cleaned_data['date']
         passenger_count = form.cleaned_data['passengers']
 
-        # Buscar posibles rutas
-        route_chains = find_route_chain(origin.code, destination.code)
+        try:
+            # Buscar posibles rutas usando el servicio
+            route_chains = RouteService.find_available_routes(
+                origin.code, 
+                destination.code, 
+                fecha
+            )
+            
+            if not route_chains:
+                messages.error(self.request, "No se encontró una ruta válida entre esos aeropuertos.")
+                return self.form_invalid(form)
 
-        if not route_chains:
-            messages.error(self.request, "No se encontró una ruta válida entre esos aeropuertos.")
+            # Guardar en sesión
+            self.request.session["route_chain_ids_list"] = route_chains
+            self.request.session["search_date"] = str(fecha)
+            self.request.session["passenger_count"] = passenger_count
+
+            messages.success(self.request, "Itinerarios encontrados correctamente.")
+            return redirect("choose_itinerary")
+            
+        except Exception as e:
+            messages.error(self.request, f"Error buscando rutas: {str(e)}")
             return self.form_invalid(form)
-
-        rutas_validas = []
-
-        for chain in route_chains:
-            vuelos = []
-            for tramo in chain:
-                vuelo = Flight.objects.filter(
-                    route=tramo,
-                    departure_time__date=fecha,
-                    status="active"
-                ).first()
-                if vuelo:
-                    vuelos.append(vuelo)
-                else:
-                    break
-
-            if len(vuelos) == len(chain):
-                rutas_validas.append([r.id for r in chain])
-
-        if not rutas_validas:
-            messages.error(self.request, "No hay vuelos disponibles en esa fecha.")
-            return self.form_invalid(form)
-
-        # Guardar en sesión
-        self.request.session["route_chain_ids_list"] = rutas_validas
-        self.request.session["search_date"] = str(fecha)
-        self.request.session["passenger_count"] = passenger_count
-
-        messages.success(self.request, "Itinerarios encontrados correctamente.")
-        return redirect("choose_itinerary")
 
     def form_invalid(self, form):
         messages.error(self.request, "Por favor corregí los errores del formulario.")
         return super().form_invalid(form)
 
 
-
 # Objeto que representa un itinerario posible
 ItineraryOption = namedtuple("ItineraryOption", ["id", "route_summary", "duration", "total_price"])
+
 
 # Vista para mostrar las opciones de itinerario posibles
 class ChooseItineraryView(TemplateView):
@@ -141,42 +131,37 @@ class ChooseItineraryView(TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         route_chains_ids = self.request.session.get("route_chain_ids_list", [])
-        options = []
-        rutas_completas = []
-
-        for idx, chain_ids in enumerate(route_chains_ids, 1):
-            duration = 0
-            total_price = 0
-            routes = Route.objects.filter(id__in=chain_ids).select_related("origin_airport", "destination_airport")
-            if not routes:
-                continue
-            flight = Flight.objects.filter(route__in=chain_ids)
-           
-            rutas_completas.append(routes)  # Guardamos todas las rutas reales
-
-            summary = " → ".join([r.origin_airport.code for r in routes] + [routes.last().destination_airport.code])
+        search_date = self.request.session.get("search_date")
+        
+        try:
+            options, rutas_completas = RouteService.get_itinerary_options(
+                route_chains_ids, 
+                search_date
+            )
             
-            duration = sum(r.duration for r in flight)
-            total_price = sum(a.base_price for a in flight)
-            options.append(ItineraryOption(idx, summary, duration, total_price))
-         
-
-        context["itineraries"] = options
-        context["route_options"] = route_chains_ids
-        context["rutas_completas"] = rutas_completas  # lo agregamos al contexto
-        context["origin"] = options[0].route_summary.split(" → ")[0] if options else None
-        context["destination"] = options[0].route_summary.split(" → ")[-1] if options else None
-        context["date"] = self.request.session.get("search_date")
-        context["passengers"] = self.request.session.get("passenger_count")
+            context["itineraries"] = options
+            context["route_options"] = route_chains_ids
+            context["rutas_completas"] = rutas_completas
+            context["origin"] = options[0].route_summary.split(" → ")[0] if options else None
+            context["destination"] = options[0].route_summary.split(" → ")[-1] if options else None
+            context["date"] = search_date
+            context["passengers"] = self.request.session.get("passenger_count")
+            
+        except Exception as e:
+            messages.error(self.request, f"Error cargando opciones: {str(e)}")
+            context["itineraries"] = []
+            context["route_options"] = []
+            context["rutas_completas"] = []
+            
         return context
 
 
 # Vista que se ejecuta cuando se selecciona el itinerario
-
 class SelectItineraryView(View):    
     def get(self, request):
         # Redirigimos a la vista de elección de itinerario si se accede por GET
         return redirect("choose_itinerary")
+        
     def post(self, request):
         option_idx = int(request.POST.get("option_idx", 0))
 
@@ -187,9 +172,9 @@ class SelectItineraryView(View):
         request.session["route_chain"] = select_route[option_idx]
         print(request.session["route_chain"])
         return redirect("load_passengers")  # Paso siguiente: cargar pasajeros
-    
-# Vista que permite al usuario seleccionar manualmente los asientos
 
+
+# Vista que permite al usuario seleccionar manualmente los asientos
 class ChooseSeatView(View):
     template_name = "choose_seat.html"
 
@@ -197,132 +182,74 @@ class ChooseSeatView(View):
         passenger_ids = request.session.get("passenger_ids", [])
         route_ids = request.session.get("route_chain", [])
 
-        passengers = Passenger.objects.filter(id__in=passenger_ids)
-        routes = Route.objects.filter(id__in=route_ids)
-        flights = [Flight.objects.filter(route=route, status="active").first() for route in routes]
-
-        seat_data = []
-
-        for p_index, passenger in enumerate(passengers):
-            for f_index, flight in enumerate(flights):
-                assigned_seat_ids = FlightSegment.objects.filter(
-                    flight=flight,
-                    seat__isnull=False
-                ).values_list("seat_id", flat=True)
-
-                available_seats = Seat.objects.filter(
-                    airplane=flight.airplane
-                ).exclude(id__in=assigned_seat_ids)
-
-                key = f"{p_index}_{f_index}"
-                seat_data.append({
-                    "key": key,
-                    "passenger": passenger,
-                    "flight": flight,
-                    "seats": available_seats
-                })
-
-        return render(request, self.template_name, {"seat_data": seat_data})
+        try:
+            seat_data = SeatService.get_available_seats_for_passengers(
+                passenger_ids, 
+                route_ids
+            )
+            
+            return render(request, self.template_name, {"seat_data": seat_data})
+            
+        except Exception as e:
+            messages.error(request, f"Error cargando asientos: {str(e)}")
+            return redirect("choose_itinerary")
 
     def post(self, request):
         passenger_ids = request.session.get("passenger_ids", [])
-        route_ids = request.session.get("route_chain_ids", [])
+        route_ids = request.session.get("route_chain", [])
 
-        passengers = Passenger.objects.filter(id__in=passenger_ids)
-        routes = Route.objects.filter(id__in=route_ids)
-        flights = [Flight.objects.filter(route=route, status="active").first() for route in routes]
-
-        errores = []
-        last_itinerary = None
-
-        for p_index, passenger in enumerate(passengers):
-            reservation_code = str(uuid.uuid4())[:8].upper()
-            while Itinerary.objects.filter(reservation_code=reservation_code).exists():
-                reservation_code = str(uuid.uuid4())[:8].upper()
-
-            itinerary = ItineraryService.create(
-                passenger=passenger,
-                reservation_code=reservation_code
+        try:
+            last_itinerary = ReservationService.create_reservations_with_seats(
+                passenger_ids, 
+                route_ids, 
+                request.POST
             )
-            last_itinerary = itinerary
-
-            for f_index, flight in enumerate(flights):
-                key = f"{p_index}_{f_index}"
-                seat_id = request.POST.get(f"seat_{key}")
-                seat = Seat.objects.filter(id=seat_id).first() if seat_id else None
-
-                if not seat:
-                    errores.append(f"Asiento no seleccionado para {passenger.name} en vuelo {flight}")
-                    continue
-
-                if FlightSegment.objects.filter(seat=seat).exists():
-                    errores.append(f"Asiento {seat.row}{seat.column} ya fue asignado.")
-                    continue
-
-                FlightSegmentRepository.create(
-                    itinerary=itinerary,
-                    flight=flight,
-                    seat=seat,
-                    price=flight.base_price,
-                    status="confirmed"
-                )
-
-        if errores:
-            for err in errores:
-                messages.error(request, err)
+            
+            messages.success(request, "Asientos asignados correctamente.")
+            return redirect("view_summary", itinerary_id=last_itinerary.id)
+            
+        except Exception as e:
+            messages.error(request, str(e))
             return redirect("choose_seat_view")
 
-        messages.success(request, "Asientos asignados correctamente.")
-        return redirect("view_summary", itinerary_id=last_itinerary.id)
 
-
-
+# Vista que genera itinerarios automáticamente sin selección manual de asientos
 class GenerateItineraryView(View):
     def get(self, request):
-        route_ids = request.session.get("route_chain_ids", [])
+        route_ids = request.session.get("route_chain", [])
         passenger_ids = request.session.get("passenger_ids", [])
 
-        passengers = Passenger.objects.filter(id__in=passenger_ids)
-        routes = Route.objects.filter(id__in=route_ids).select_related("origin_airport", "destination_airport")
-
-        last_itinerary = None
-        for passenger in passengers:
-            # Generar un código único (puede ser random, UUID, o incremental si preferís)
-            reservation_code = str(uuid.uuid4())[:8].upper()
-
-            # Asegurarse de que sea único (en caso de que haya colisiones)
-            while Itinerary.objects.filter(reservation_code=reservation_code).exists():
-                reservation_code = str(uuid.uuid4())[:8].upper()
-
-            itinerary = ItineraryService.create(
-                passenger=passenger,
-                reservation_code=reservation_code
+        try:
+            last_itinerary = ReservationService.create_automatic_reservations(
+                passenger_ids, 
+                route_ids
             )
-            last_itinerary = itinerary
-
-            for route in routes:
-                flight = Flight.objects.filter(route=route, status="active").first()
-                seat = Seat.objects.filter(airplane=flight.airplane).first()
-                FlightSegmentRepository.create(
-                    itinerary=itinerary,
-                    flight=flight,
-                    seat=seat,
-                    price=flight.base_price,
-                    status="confirmed"
-                )
-
-        return redirect("view_summary", itinerary_id=last_itinerary.id)
-
-
+            
+            return redirect("view_summary", itinerary_id=last_itinerary.id)
+            
+        except Exception as e:
+            messages.error(request, f"Error generando itinerario: {str(e)}")
+            return redirect("choose_itinerary")
 
 
 # Vista que genera un ticket (código de barras) asociado a un itinerario
 class CreateTicketView(View):
     def get(self, request, itinerary_id):
-        itinerary = get_object_or_404(Itinerary, id=itinerary_id)
-        barcode = str(uuid.uuid4())[:10].upper()
-        TicketRepository.create(itinerary=itinerary, barcode=barcode)
-        return redirect('view_summary', itinerary_id=itinerary.id)
+        try:
+            itinerary = ItineraryService.get(itinerary_id)
+            if not itinerary:
+                messages.error(request, "Itinerario no encontrado.")
+                return redirect("search_route")
+                
+            barcode = str(uuid.uuid4())[:10].upper()
+            TicketService.create(itinerary, barcode)
+            
+            return redirect('view_summary', itinerary_id=itinerary.id)
+            
+        except Exception as e:
+            messages.error(request, f"Error creando ticket: {str(e)}")
+            return redirect('view_summary', itinerary_id=itinerary_id)
+
 
 # Vista que muestra el resumen completo del itinerario reservado
 class ViewSummary(TemplateView):
@@ -330,11 +257,20 @@ class ViewSummary(TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        itinerary = get_object_or_404(Itinerary, id=self.kwargs["itinerary_id"])
+        itinerary_id = self.kwargs["itinerary_id"]
+        
+        try:
+            itinerary = ItineraryService.get(itinerary_id)
+            if not itinerary:
+                raise Exception("Itinerario no encontrado")
 
-        context["itinerary"] = itinerary
-        context["passenger"] = itinerary.passenger
-        context["segments"] = FlightSegmentService.list_by_itinerary(itinerary)
-        context["ticket"] = TicketService.get_by_itinerary(itinerary)
-
+            context["itinerary"] = itinerary
+            context["passenger"] = itinerary.passenger
+            context["segments"] = FlightSegmentService.list_by_itinerary(itinerary)
+            context["ticket"] = TicketService.get_by_itinerary(itinerary)
+            
+        except Exception as e:
+            messages.error(self.request, f"Error cargando resumen: {str(e)}")
+            context["itinerary"] = None
+            
         return context
