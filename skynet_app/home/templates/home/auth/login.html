@@ -1,0 +1,22 @@
+{% extends "home/base.html" %}
+
+{% block title %} Inicio de Sesion {% endblock %}
+
+{% block content %} 
+    <div class="row">
+        <div class="col-4"></div>
+        <div class="col-4">
+            <h2> Inicio de Sesion </h2>
+
+        <form method="post" >
+            {% csrf_token %}
+            {{ form }}
+            <br>
+            <button class="btn btn-success mt-4" type="submit"> Iniciar Sesion </button>
+        </form>
+        <p> ¿No tenes cuenta? <a href="{% url 'register' %}"> Registrate aca </a> </p>
+     </div>
+        <div class="col-4"></div>
+    </div>
+    
+{% endblock %}
