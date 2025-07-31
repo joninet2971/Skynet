@@ -4,10 +4,11 @@ from django.contrib.auth.models import User
 from django.shortcuts import redirect, render
 from django.views import View
 from home.forms import LoginForm, RegisterForm
+from reservations.forms import SearchRouteForm 
 
-class HomeView(View):
-    def get(self, request):
-        return render(request, 'home/base.html')
+def home_view(request):
+    form = SearchRouteForm()
+    return render(request, "home/index.html", {"form": form})
         
 class LogoutView(View):
     def get(self, request):

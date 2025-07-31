@@ -1,0 +1,444 @@
+{% extends 'home/base.html' %}
+{% load widget_tweaks %}
+{% load seat_tags %}
+
+{% block title %}Bienvenido a Skynet - Vuelos al mejor precio{% endblock %}
+
+{% block extra_js %}
+{{ block.super }}
+<script>
+    // Inicializar el carrusel con opciones personalizadas
+    document.addEventListener('DOMContentLoaded', function() {
+        var myCarousel = new bootstrap.Carousel(document.getElementById('mainCarousel'), {
+            interval: 3000,  // Cambia cada 3 segundos
+            wrap: true,      // Vuelve al principio después del último slide
+            touch: true      // Habilita el deslizamiento táctil
+        });
+    });
+</script>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Hero Section */
+    .hero-carousel {
+        position: relative;
+        margin: 40px 0;
+        height: 500px;
+        overflow: hidden;
+        border-radius: 16px; /* Esquinas redondeadas */
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); /* Sombra sutil */
+    }
+    
+    .carousel-item {
+        height: 600px;
+        background-size: cover;
+        background-position: center;
+        transition: transform 0.6s ease-in-out; /* Transición suave */
+    }
+    
+    .carousel-item::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+    }
+    
+    .carousel-caption {
+        bottom: 200px;
+        text-align: center;
+    }
+    
+    .carousel-caption h1 {
+        font-size: 3.5rem;
+        font-weight: 800;
+        margin-bottom: 20px;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        animation: fadeInUp 1s ease;
+    }
+    
+    .carousel-caption p {
+        font-size: 1.5rem;
+        margin-bottom: 30px;
+        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+        animation: fadeInUp 1s ease 0.2s;
+        animation-fill-mode: both;
+    }
+    
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .carousel-control-prev,
+    .carousel-control-next {
+        width: 5%;
+    }
+    
+    .carousel-indicators {
+        bottom: 80px;
+    }
+    
+    .carousel-indicators [data-bs-target] {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        margin: 0 8px;
+        background-color: #fff;
+        opacity: 0.5;
+        transition: all 0.3s ease;
+    }
+    
+    .carousel-indicators .active {
+        background-color: var(--accent-color);
+        opacity: 1;
+        transform: scale(1.2);
+    }
+
+    .hero-title {
+        font-size: 3.5rem;
+        font-weight: 800;
+        margin-bottom: 20px;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+    }
+
+    .hero-subtitle {
+        font-size: 1.5rem;
+        margin-bottom: 30px;
+        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+    }
+
+    /* Search Form */
+    .search-form {
+        background: white;
+        border-radius: 10px;
+        padding: 25px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        margin-top: -50px;
+        position: relative;
+        z-index: 10;
+    }
+
+    /* Destinations Section */
+    .destinations-section {
+        padding: 60px 0;
+    }
+
+    .section-title {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: #333;
+        margin-bottom: 40px;
+        text-align: center;
+        position: relative;
+    }
+
+    .section-title:after {
+        content: '';
+        display: block;
+        width: 80px;
+        height: 4px;
+        background: #FFD700;
+        margin: 15px auto 0;
+    }
+
+    /* Destination Cards */
+    .destination-card {
+        border: none;
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        margin-bottom: 30px;
+    }
+
+    .destination-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+    }
+
+    .destination-img {
+        height: 200px;
+        object-fit: cover;
+    }
+
+    .destination-card .card-body {
+        padding: 20px;
+    }
+
+    .destination-card .card-title {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: #333;
+        margin-bottom: 10px;
+    }
+
+    .destination-card .price {
+        color: #FF6B00;
+        font-size: 1.5rem;
+        font-weight: 800;
+        margin: 10px 0;
+    }
+
+    /* Features Section */
+    .features-section {
+        background: #f8f9fa;
+        padding: 60px 0;
+    }
+
+    .feature-box {
+        text-align: center;
+        padding: 30px 20px;
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        height: 100%;
+        transition: transform 0.3s ease;
+    }
+
+    .feature-box:hover {
+        transform: translateY(-5px);
+    }
+
+    .feature-icon {
+        font-size: 2.5rem;
+        color: #FFD700;
+        margin-bottom: 20px;
+    }
+
+    .feature-title {
+        font-size: 1.25rem;
+        font-weight: 700;
+        margin-bottom: 15px;
+        color: #333;
+    }
+
+    /* Newsletter Section */
+    .newsletter-section {
+        background: #333;
+        color: white;
+        padding: 60px 0;
+        text-align: center;
+    }
+
+    .newsletter-title {
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 20px;
+    }
+
+    .newsletter-form {
+        max-width: 600px;
+        margin: 0 auto;
+    }
+
+    .newsletter-form .form-control {
+        height: 50px;
+        border-radius: 25px 0 0 25px;
+        border: none;
+        padding: 0 25px;
+    }
+
+    .newsletter-form .btn {
+        border-radius: 0 25px 25px 0;
+        padding: 0 30px;
+        height: 50px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Hero Section with Carousel -->
+<div id="mainCarousel" class="carousel slide hero-carousel rounded-4 overflow-hidden" data-bs-ride="carousel" data-bs-interval="3000">
+    <!-- Indicators -->
+    <div class="carousel-indicators">
+        <button type="button" data-bs-target="#mainCarousel" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Slide 1"></button>
+        <button type="button" data-bs-target="#mainCarousel" data-bs-slide-to="1" aria-label="Slide 2"></button>
+        <button type="button" data-bs-target="#mainCarousel" data-bs-slide-to="2" aria-label="Slide 3"></button>
+        <button type="button" data-bs-target="#mainCarousel" data-bs-slide-to="3" aria-label="Slide 4"></button>
+    </div>
+    
+    <!-- Slides -->
+    <div class="carousel-inner">
+        <!-- Slide 1 -->
+        <div class="carousel-item active" style="background-image: url('https://static.flybondi.com/3390x0/filters:format(webp)/f/77475/3390x1002/497c256e3d/regalamos-pasajes_nqn_banner-web-copia.png');">
+        </div>
+        
+        <!-- Slide 2 -->
+        <div class="carousel-item" style="background-image: url('https://static.flybondi.com/2650x0/filters:format(webp)/f/77475/2650x776/fefb82e1d2/banner-web-3.png');">
+        </div>
+        
+        <!-- Slide 3 -->
+        <div class="carousel-item" style="background-image: url('https://media.staticontent.com/media/pictures/c966e570-9efd-4c34-b422-b96a70cad54c');">
+        </div>
+
+        <div class="carousel-item" style="background-image: url('https://kilo-content.aircanada.com/ac/applications/achomebeta/content/1.0.1452/assets/img/page-banner/max-desktop/flights.webp');">
+        </div>
+    </div>
+    
+    <!-- Controls -->
+    <button class="carousel-control-prev" type="button" data-bs-target="#mainCarousel" data-bs-slide="prev">
+        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+        <span class="visually-hidden">Anterior</span>
+    </button>
+    <button class="carousel-control-next" type="button" data-bs-target="#mainCarousel" data-bs-slide="next">
+        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+        <span class="visually-hidden">Siguiente</span>
+    </button>
+</div>
+
+<!-- Search Form -->
+<div class="container" id="search-form">
+    <div class="search-form" style="margin-top: -50px;">
+        <form method="post" action="{% url 'create_itinerary' %}" class="row g-2 align-items-end" novalidate>
+        {% csrf_token %}
+            <div class="row g-3">
+                <div class="col-md-3">
+                        <label for="{{ form.origin.id_for_label }}" class="form-label">Origen</label>
+                        {{ form.origin|add_class:"form-control" }}
+                </div>
+                <div class="col-md-3">
+                    <label for="{{ form.destination.id_for_label }}" class="form-label">Destino</label>
+                    {{ form.destination|add_class:"form-control" }}
+                </div>
+                <div class="col-md-2">
+                    <label for="{{ form.date.id_for_label }}" class="form-label">Fecha</label>
+                    {{ form.date|add_class:"form-control" }}
+                </div>
+                <div class="col-md-2">
+                    <label for="{{ form.passengers.id_for_label }}" class="form-label">Pasajeros</label>
+                    {{ form.passengers|add_class:"form-control" }}
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="fas fa-search me-1"></i> Buscar
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Destinations Section -->
+<section class="destinations-section">
+    <div class="container">
+        <h2 class="section-title">Destinos Populares</h2>
+        <div class="row">
+            <!-- Destination Card 1 -->
+            <div class="col-md-4">
+                <div class="card destination-card">
+                    <img src="https://media.staticontent.com/media/pictures/faf03175-d651-41ce-89be-58136b0890f4/300x200" class="card-img-top destination-img" alt="Buenos Aires">
+                    <div class="card-body">
+                        <h5 class="card-title">Mar del plata</h5>
+                        <p class="card-text">La ciudad que nunca duerme, con su encanto único y su vibrante cultura.</p>
+                        <div class="price">Desde $15.999</div>
+                        <a href="#" class="btn btn-outline-warning">Ver vuelos</a>
+                    </div>
+                </div>
+            </div>
+            <!-- Destination Card 2 -->
+            <div class="col-md-4">
+                <div class="card destination-card">
+                    <img src="https://media.staticontent.com/media/pictures/e43505a4-c488-495c-a466-58763d1d6fed/300x200" class="card-img-top destination-img" alt="Córdoba">
+                    <div class="card-body">
+                        <h5 class="card-title">Córdoba</h5>
+                        <p class="card-text">Descubrí las sierras y la rica historia de esta hermosa provincia.</p>
+                        <div class="price">Desde $12.999</div>
+                        <a href="#" class="btn btn-outline-warning">Ver vuelos</a>
+                    </div>
+                </div>
+            </div>
+            <!-- Destination Card 3 -->
+            <div class="col-md-4">
+                <div class="card destination-card">
+                    <img src="https://media.staticontent.com/media/pictures/9c9c9803-adc1-4819-91f4-b6312b3dd504/300x200" class="card-img-top destination-img" alt="Mendoza">
+                    <div class="card-body">
+                        <h5 class="card-title">Mendoza</h5>
+                        <p class="card-text">Tierra del buen vino y los paisajes montañosos inolvidables.</p>
+                        <div class="price">Desde $14.999</div>
+                        <a href="#" class="btn btn-outline-warning">Ver vuelos</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section class="features-section">
+    <div class="container">
+        <div class="row">
+            <!-- Feature 1 -->
+            <div class="col-md-4 mb-4">
+                <div class="feature-box">
+                    <div class="feature-icon">
+                        <i class="fas fa-percentage"></i>
+                    </div>
+                    <h3 class="feature-title">Hasta 12 Cuotas</h3>
+                    <p>Paga en cuotas sin interés con todas las tarjetas de crédito.</p>
+                </div>
+            </div>
+            <!-- Feature 2 -->
+            <div class="col-md-4 mb-4">
+                <div class="feature-box">
+                    <div class="feature-icon">
+                        <i class="fas fa-suitcase-rolling"></i>
+                    </div>
+                    <h3 class="feature-title">Equipaje Incluido</h3>
+                    <p>Llevá hasta 10kg de equipaje de mano sin cargo adicional.</p>
+                </div>
+            </div>
+            <!-- Feature 3 -->
+            <div class="col-md-4 mb-4">
+                <div class="feature-box">
+                    <div class="feature-icon">
+                        <i class="fas fa-headset"></i>
+                    </div>
+                    <h3 class="feature-title">Atención 24/7</h3>
+                    <p>Nuestro equipo está disponible para ayudarte en todo momento.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Newsletter Section -->
+<section class="newsletter-section">
+    <div class="container">
+        <h2 class="newsletter-title">¡No te pierdas nuestras ofertas!</h2>
+        <p class="mb-4">Suscribite a nuestro newsletter y recibí las mejores ofertas en tu correo.</p>
+        <form class="newsletter-form">
+            <div class="input-group">
+                <input type="email" class="form-control" placeholder="Tu correo electrónico" required>
+                <button class="btn btn-warning fw-bold" type="submit">SUSCRIBIRME</button>
+            </div>
+        </form>
+    </div>
+</section>
+{% endblock %}
+
+<script>
+  (function () {
+    'use strict';
+    var forms = document.querySelectorAll('.needs-validation');
+    Array.prototype.slice.call(forms).forEach(function (form) {
+      form.addEventListener('submit', function (event) {
+        if (!form.checkValidity()) {
+          event.preventDefault();
+          event.stopPropagation();
+        }
+        form.classList.add('was-validated');
+      }, false);
+    });
+  })();
+</script>
+
