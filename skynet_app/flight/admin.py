@@ -14,6 +14,6 @@ class RouteAdmin(admin.ModelAdmin):
 
 @admin.register(Flight)
 class FlightAdmin(admin.ModelAdmin):
-    list_display = ('airplane', 'route', 'departure_time', 'arrival_time', 'duration', 'status', 'base_price')
+    list_display = ('airplane', 'route', 'departure_time', 'arrival_time', 'status', 'base_price')
     search_fields = ('airplane__name', 'route__origin_airport__code', 'route__destination_airport__code')
     list_filter = ('status', 'departure_time', 'arrival_time')

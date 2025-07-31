@@ -47,8 +47,7 @@ class FlightForm(forms.ModelForm):
             'route': forms.Select(attrs={'class': 'form-select'}),
             'departure_time': forms.DateTimeInput(attrs={'class': 'form-control', 'type': 'datetime-local'}),
             'arrival_time': forms.DateTimeInput(attrs={'class': 'form-control', 'type': 'datetime-local'}),
-            'duration': forms.NumberInput(attrs={'class': 'form-control', 'min': 1}),
-            'status': forms.TextInput(attrs={'class': 'form-control'}),
+            'status': forms.Select(attrs={'class': 'form-select'}),
             'base_price': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01', 'min': 0}),
         }
 
