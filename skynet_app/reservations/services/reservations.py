@@ -171,9 +171,15 @@ class FlightSegmentService:
 class TicketService:
     @staticmethod
     def create(itinerary: Itinerary, barcode: str, status: str = "issued") -> Ticket:
+        # Verificar si ya tiene ticket
+        if hasattr(itinerary, 'ticket'):
+            return itinerary.ticket  # Ya existe, devolvemos el existente
+
         if Ticket.objects.filter(barcode=barcode).exists():
             raise ValidationError("Barcode already exists.")
+
         return TicketRepository.create(itinerary, barcode, status)
+
 
     @staticmethod
     def update(ticket_id: int, data: dict) -> Ticket:

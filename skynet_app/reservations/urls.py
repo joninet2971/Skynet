@@ -7,7 +7,8 @@ from reservations.views import (
     GroupSummaryView,
     LoadPassengersView,
     GenerateItineraryView,
-    ChooseSeatView
+    ChooseSeatView,
+    TicketDetailView
 )
 
 urlpatterns = [
@@ -66,4 +67,11 @@ urlpatterns = [
         view=ChooseSeatView.as_view(),
         name='choose_seat_view'
     ),
+
+    path(
+        "ticket/<int:ticket_id>/", 
+        TicketDetailView.as_view(),
+        name="ticket_detail"
+    ),
+
 ]

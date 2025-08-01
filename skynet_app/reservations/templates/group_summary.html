@@ -30,7 +30,16 @@
         </ul>
 
         <p class="mt-3"><strong>Total pagado:</strong> ${{ itin.total_price }}</p>
-        <p><strong>Código de ticket:</strong> {{ itin.ticket }}</p>
+        <p><strong>Código de ticket:</strong> {{ itin.ticket.barcode }}</p>
+
+        {% if itin.ticket %}
+          <a href="{% url 'ticket_detail' itin.ticket.id %}" class="btn btn-outline-info btn-sm mt-2">
+            Ver ticket
+          </a>
+        {% else %}
+          <p class="text-danger">Ticket no emitido</p>
+        {% endif %}
+
       </div>
     </div>
   {% endfor %}

@@ -1,10 +1,11 @@
 # Django imports
 from django.contrib import messages
-from django.views.generic import FormView, TemplateView
+from django.views.generic import FormView, TemplateView, DetailView
 from django.shortcuts import redirect, render
 from django.views import View
 from collections import namedtuple
 import uuid
+from django.shortcuts import get_object_or_404
 
 # Formularios
 from reservations.forms import PassengerForm, SearchRouteForm
@@ -12,6 +13,7 @@ from reservations.forms import PassengerForm, SearchRouteForm
 
 # Modelos
 from flight.models import Flight, Route
+from reservations.models import Ticket
 
 # Servicios
 from reservations.services.reservations import (
@@ -139,12 +141,12 @@ class ChooseItineraryView(TemplateView):
             if not routes:
                 continue
             flight = Flight.objects.filter(route__in=chain_ids)
-           
+                    
             rutas_completas.append(routes)  # Guardamos todas las rutas reales
 
             summary = " → ".join([r.origin_airport.code for r in routes] + [routes.last().destination_airport.code])
             
-            duration = sum(r.duration for r in flight)
+            duration = sum(r.route.estimated_duration for r in flight)
             total_price = sum(a.base_price for a in flight)
             options.append(ItineraryOption(idx, summary, duration, total_price))
          
@@ -206,6 +208,11 @@ class ChooseSeatView(View):
                 route_ids, 
                 request.POST
             )
+
+            # Crear un ticket por itinerario
+            for itinerary in itineraries:
+                barcode = str(uuid.uuid4())[:10].upper()
+                TicketService.create(itinerary, barcode)
             
             # Guardamos los IDs en sesión para mostrarlos luego
             request.session["created_itineraries"] = [i.id for i in itineraries]
@@ -255,6 +262,41 @@ class CreateTicketView(View):
         except Exception as e:
             messages.error(request, f"Error creando ticket: {str(e)}")
             return redirect('view_summary', itinerary_id=itinerary_id)
+        
+
+class TicketDetailView(DetailView):
+    model = Ticket
+    template_name = "ticket_detail.html"
+    context_object_name = "ticket"
+
+    def get_object(self):
+        return get_object_or_404(Ticket, id=self.kwargs["ticket_id"])
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        ticket = context["ticket"]
+        itinerary = ticket.itinerary
+        segments = FlightSegmentService.list_by_itinerary(itinerary)
+
+        vuelos = []
+        for seg in segments:
+            vuelos.append({
+                "flight_number": seg.flight.id,
+                "origin": seg.flight.route.origin_airport.code +" - "+ seg.flight.route.origin_airport.city,
+                "destination": seg.flight.route.destination_airport.code +" - "+ seg.flight.route.destination_airport.city,
+                "departure": seg.flight.departure_time,
+                "arrival": seg.flight.arrival_time,
+                "duration": seg.flight.route.estimated_duration,
+                "seat": f"{seg.seat.row}{seg.seat.column}" if seg.seat else "No asignado",
+                "price": seg.price,
+            })
+
+        context["passenger"] = itinerary.passenger
+        context["reservation_code"] = itinerary.reservation_code
+        context["flights"] = vuelos
+        context["total_price"] = sum(v["price"] for v in vuelos)
+        return context
+
 
 
 # Vista que muestra el resumen completo del itinerario reservado
@@ -279,11 +321,11 @@ class GroupSummaryView(TemplateView):
                     for seg in segments:
                         flights_data.append({
                             "flight_number": seg.flight.id,
-                            "origin": seg.flight.route.origin_airport.name,
-                            "destination": seg.flight.route.destination_airport.name,
+                            "origin": seg.flight.route.origin_airport.name +" - "+ seg.flight.route.origin_airport.city,
+                            "destination": seg.flight.route.destination_airport.name +" - "+ seg.flight.route.destination_airport.city,
                             "departure_time": seg.flight.departure_time,
                             "arrival_time": seg.flight.arrival_time,
-                            "duration": seg.flight.duration,            
+                            "duration": seg.flight.route.estimated_duration,            
                             "seat": f"{seg.seat.row}{seg.seat.column}" if seg.seat else "No asignado",
                             "price": seg.price,
                         })
@@ -299,7 +341,7 @@ class GroupSummaryView(TemplateView):
                         },
                         "flights": flights_data,
                         "total_price": sum(f["price"] for f in flights_data),
-                        "ticket": ticket.barcode if ticket else "No emitido",
+                        "ticket": ticket,
                     })
 
             context["group_itineraries"] = itineraries
