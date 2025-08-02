@@ -13,7 +13,7 @@ def home_view(request):
 class LogoutView(View):
     def get(self, request):
         logout(request)
-        return redirect('login')
+        return redirect('home')
     
 
 class RegisterView(View):
@@ -39,11 +39,8 @@ class RegisterView(View):
                 request,
                 "Usuario registrado correctamente"
             )
-        return render(
-            request,
-            'home/auth/register.html',
-            {"form" : form }
-        )
+        return redirect('login')
+        
 
 
 class LoginView(View):
@@ -70,7 +67,7 @@ class LoginView(View):
             if user is not None: 
                 login(request, user)
                 messages.success(request, "Sesion iniciada")
-                return redirect("index")
+                return redirect("home")
             else:
                 messages.error(request, "El usuario o contraseña no coinciden")
                 

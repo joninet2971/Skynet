@@ -1,5 +1,6 @@
 from django.urls import reverse_lazy
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView
+from django.http import HttpResponseForbidden
 from django.contrib import messages
 from django.shortcuts import redirect
 from .models import Airport, Route, Flight
@@ -14,6 +15,11 @@ class AirportList(ListView):
     template_name = 'airports_list.html'
     context_object_name = 'airports'
 
+    def dispatch(self, request, *args, **kwargs):
+        if not request.user.is_authenticated or not request.user.is_superuser:
+            return HttpResponseForbidden("Acceso denegado. Solo para administradores.")
+        return super().dispatch(request, *args, **kwargs)
+
     def get_queryset(self):
         return AirportService.get_all()
 
@@ -23,6 +29,12 @@ class AirportCreate(CreateView):
     form_class = AirportForm
     template_name = 'airport_form.html'
     success_url = reverse_lazy('airport_list')
+
+
+    def dispatch(self, request, *args, **kwargs):
+        if not request.user.is_authenticated or not request.user.is_superuser:
+            return HttpResponseForbidden("Acceso denegado. Solo para administradores.")
+        return super().dispatch(request, *args, **kwargs)
 
     def form_valid(self, form):
         try:
@@ -40,6 +52,11 @@ class AirportUpdate(UpdateView):
     template_name = 'airport_form.html'
     success_url = reverse_lazy('airport_list')
 
+    def dispatch(self, request, *args, **kwargs):
+        if not request.user.is_authenticated or not request.user.is_superuser:
+            return HttpResponseForbidden("Acceso denegado. Solo para administradores.")
+        return super().dispatch(request, *args, **kwargs)
+
     def form_valid(self, form):
         try:
             airport = self.get_object()
@@ -56,6 +73,11 @@ class AirportDelete(DeleteView):
     template_name = 'airport_confirm_delete.html'
     success_url = reverse_lazy('airport_list')
 
+    def dispatch(self, request, *args, **kwargs):
+        if not request.user.is_authenticated or not request.user.is_superuser:
+            return HttpResponseForbidden("Acceso denegado. Solo para administradores.")
+        return super().dispatch(request, *args, **kwargs)
+
     def delete(self, request, *args, **kwargs):
         messages.success(self.request, "Aeropuerto eliminado correctamente.")
         return super().delete(request, *args, **kwargs)
@@ -68,6 +90,11 @@ class RouteList(ListView):
     template_name = 'routes_list.html'
     context_object_name = 'routes'
 
+    def dispatch(self, request, *args, **kwargs):
+        if not request.user.is_authenticated or not request.user.is_superuser:
+            return HttpResponseForbidden("Acceso denegado. Solo para administradores.")
+        return super().dispatch(request, *args, **kwargs)
+
     def get_queryset(self):
         return RouteService.get_all()
 
@@ -77,6 +104,11 @@ class RouteCreate(CreateView):
     form_class = RouteForm
     template_name = 'route_form.html'
     success_url = reverse_lazy('route_list')
+
+    def dispatch(self, request, *args, **kwargs):
+        if not request.user.is_authenticated or not request.user.is_superuser:
+            return HttpResponseForbidden("Acceso denegado. Solo para administradores.")
+        return super().dispatch(request, *args, **kwargs)
 
     def form_valid(self, form):
         try:
@@ -94,6 +126,11 @@ class RouteUpdate(UpdateView):
     template_name = 'route_form.html'
     success_url = reverse_lazy('route_list')
 
+    def dispatch(self, request, *args, **kwargs):
+        if not request.user.is_authenticated or not request.user.is_superuser:
+            return HttpResponseForbidden("Acceso denegado. Solo para administradores.")
+        return super().dispatch(request, *args, **kwargs)
+
     def form_valid(self, form):
         try:
             route = self.get_object()
@@ -110,6 +147,11 @@ class RouteDelete(DeleteView):
     template_name = 'route_confirm_delete.html'
     success_url = reverse_lazy('routes_list')
 
+    def dispatch(self, request, *args, **kwargs):
+        if not request.user.is_authenticated or not request.user.is_superuser:
+            return HttpResponseForbidden("Acceso denegado. Solo para administradores.")
+        return super().dispatch(request, *args, **kwargs)
+
     def delete(self, request, *args, **kwargs):
         messages.success(self.request, "Ruta eliminada correctamente.")
         return super().delete(request, *args, **kwargs)
@@ -122,6 +164,11 @@ class FlightList(ListView):
     template_name = 'flights_list.html'
     context_object_name = 'flights'
 
+    def dispatch(self, request, *args, **kwargs):
+        if not request.user.is_authenticated or not request.user.is_superuser:
+            return HttpResponseForbidden("Acceso denegado. Solo para administradores.")
+        return super().dispatch(request, *args, **kwargs)
+
     def get_queryset(self):
         return FlightService.get_all()
 
@@ -131,6 +178,11 @@ class FlightCreate(CreateView):
     form_class = FlightForm
     template_name = 'flight_form.html'
     success_url = reverse_lazy('flight_list')
+
+    def dispatch(self, request, *args, **kwargs):
+        if not request.user.is_authenticated or not request.user.is_superuser:
+            return HttpResponseForbidden("Acceso denegado. Solo para administradores.")
+        return super().dispatch(request, *args, **kwargs)
 
     def form_valid(self, form):
         try:
@@ -148,6 +200,11 @@ class FlightUpdate(UpdateView):
     template_name = 'flight_form.html'
     success_url = reverse_lazy('flight_list')
 
+    def dispatch(self, request, *args, **kwargs):
+        if not request.user.is_authenticated or not request.user.is_superuser:
+            return HttpResponseForbidden("Acceso denegado. Solo para administradores.")
+        return super().dispatch(request, *args, **kwargs)
+
     def form_valid(self, form):
         try:
             flight = self.get_object()
@@ -163,6 +220,11 @@ class FlightDelete(DeleteView):
     model = Flight
     template_name = 'flight_confirm_delete.html'
     success_url = reverse_lazy('flight_list')
+
+    def dispatch(self, request, *args, **kwargs):
+        if not request.user.is_authenticated or not request.user.is_superuser:
+            return HttpResponseForbidden("Acceso denegado. Solo para administradores.")
+        return super().dispatch(request, *args, **kwargs)
 
     def delete(self, request, *args, **kwargs):
         messages.success(self.request, "Vuelo eliminado correctamente.")

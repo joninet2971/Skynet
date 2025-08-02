@@ -333,8 +333,25 @@
             </h4>
         </div>        
         <ul class="nav flex-column">
+            {% if user.is_authenticated %}
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'logout' %}">
+                        <i class="fas fa-user-circle"></i>
+                        <span>{{ user.username }} - Logout</span>
+                    </a>
+                </li>
+            {% else %}
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'login' %}">
+                        <i class="fas fa-sign-in-alt"></i>
+                        <span>Login</span>
+                    </a>
+                </li>
+            {% endif %}
+            {% if user.is_superuser %}
+
             <li class="nav-item">
-                <a class="nav-link active" href="{% url 'airport_list' %}">
+                <a class="nav-link" href="{% url 'airport_list' %}">
                     <i class="fas fa-tachometer-alt"></i>
                     <span>Airport</span>
                 </a>
@@ -355,6 +372,13 @@
                 <a class="nav-link" href="{% url 'airplane_list' %}">
                     <i class="fas fa-plane"></i>
                     <span>Aviones</span>
+                </a>
+            </li>
+            {% endif %}
+            <li class="nav-item">
+                <a class="nav-link" href="{% url 'create_itinerary' %}">
+                    <i class="fas fa-compass"></i>
+                    <span>Vuelos</span>
                 </a>
             </li>
         </ul>

@@ -4,6 +4,7 @@ from ..services import airplane_service
 from ..repositories import airplane_repository
 from django.core.exceptions import ValidationError
 from django.contrib import messages
+from django.http import HttpResponseForbidden
 
 
 def create_airplane_view(request):
@@ -23,6 +24,8 @@ def create_airplane_view(request):
     return render(request, 'airplane/airplane_create.html', {'form': form})
 
 def list_airplanes_view(request):
+    if not request.user.is_authenticated or not request.user.is_superuser:
+        return HttpResponseForbidden("Acceso denegado. Solo para administradores.")
     airplanes = airplane_service.get_all_airplanes_service()
     return render(request, 'airplane/airplane_list.html', {'airplanes': airplanes})
 
