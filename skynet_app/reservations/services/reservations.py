@@ -222,32 +222,53 @@ class TicketService:
 
 class RouteService:
     @staticmethod
-    def find_available_routes(origin_code: str, destination_code: str, fecha) -> List[List[int]]:
-        """Encuentra rutas disponibles entre aeropuertos en una fecha específica"""
+    def find_available_routes(origin_code: str, destination_code: str, fecha, passenger_count: int) -> List[List[int]]:
+        """Encuentra rutas disponibles entre aeropuertos en una fecha específica,
+        validando que cada vuelo tenga suficientes asientos disponibles."""
         route_chains = find_route_chain(origin_code, destination_code)
-        
+
         if not route_chains:
-            return []
+            return [], ["No se encontraron rutas entre los aeropuertos seleccionados."]
 
         rutas_validas = []
-        
+        errores = []
+
         for chain in route_chains:
             vuelos = []
+            ruta_valida = True
+
             for tramo in chain:
                 vuelo = Flight.objects.filter(
                     route=tramo,
                     departure_time__date=fecha,
                     status="active"
                 ).first()
-                if vuelo:
-                    vuelos.append(vuelo)
-                else:
+
+                if not vuelo:
+                    errores.append(f"No hay vuelo activo para la ruta {tramo}")
+                    ruta_valida = False
                     break
 
-            if len(vuelos) == len(chain):
+                available_seats_count = Seat.objects.filter(
+                    airplane=vuelo.airplane
+                ).exclude(
+                    id__in=FlightSegment.objects.filter(flight=vuelo).values_list("seat_id", flat=True)
+                ).count()
+
+                if available_seats_count < passenger_count:
+                    errores.append(
+                        f"Vuelo {vuelo} no tiene suficientes asientos disponibles: se necesitan {passenger_count}, hay {available_seats_count}."
+                    )
+                    ruta_valida = False
+                    break
+
+                vuelos.append(vuelo)
+
+            if ruta_valida and len(vuelos) == len(chain):
                 rutas_validas.append([r.id for r in chain])
 
-        return rutas_validas
+        return rutas_validas, errores
+
 
     @staticmethod
     def get_itinerary_options(route_chains_ids: List[List[int]], search_date: str) -> Tuple[List[ItineraryOption], List]:
@@ -280,18 +301,27 @@ class RouteService:
 
 class SeatService:
     @staticmethod
-    def get_available_seats_for_passengers(passenger_ids: List[int], route_ids: List[int]) -> List[dict]:
-        """Obtiene asientos disponibles con su estado (disponible, reservado, ocupado)"""
-        EXPIRATION_MINUTES = 1
-
+    def _remove_expired_segments():
+        EXPIRATION_MINUTES = 5
         expired_segments = FlightSegment.objects.filter(
             status="reserved",
             reserved_at__lt=timezone.now() - timedelta(minutes=EXPIRATION_MINUTES)
         )
-
-        # Borrar o cambiar estado de asientos reservados vencidos
+        itinerary_ids = set()
         for seg in expired_segments:
-            seg.delete()  # o `seg.status = 'cancelled'; seg.save()`
+            itinerary_ids.add(seg.itinerary_id)
+            seg.delete()
+        for itin_id in itinerary_ids:
+            if not FlightSegment.objects.filter(itinerary_id=itin_id).exists():
+                itinerary = ItineraryRepository.get_by_id(itin_id)
+                if itinerary:
+                    ItineraryRepository.delete(itinerary)
+
+    @staticmethod
+    def get_available_seats_for_passengers(passenger_ids: List[int], route_ids: List[int]) -> List[dict]:
+        """Obtiene asientos disponibles con su estado (disponible, reservado, ocupado)"""
+        SeatService._remove_expired_segments()
+            
         passengers = Passenger.objects.filter(id__in=passenger_ids)
         routes = Route.objects.filter(id__in=route_ids)
         flights = [Flight.objects.filter(route=route, status="active").first() for route in routes]
@@ -343,53 +373,6 @@ class SeatService:
 
 class ReservationService:
     @staticmethod
-    def create_automatic_reservations(passenger_ids: List[int], route_ids: List[int]) -> Itinerary:
-        """Crea reservas automáticas asignando el primer asiento disponible"""
-        passengers = Passenger.objects.filter(id__in=passenger_ids)
-        routes = Route.objects.filter(id__in=route_ids).select_related(
-            "origin_airport", "destination_airport"
-        )
-
-        last_itinerary = None
-        
-        for passenger in passengers:
-            reservation_code = ReservationService._generate_unique_reservation_code()
-
-            itinerary = ItineraryService.create(
-                passenger=passenger,
-                reservation_code=reservation_code
-            )
-            last_itinerary = itinerary
-
-            for route in routes:
-                flight = Flight.objects.filter(route=route, status="active").first()
-                if not flight:
-                    raise ValidationError(f"No hay vuelo disponible para la ruta {route}")
-                    
-                # Buscar primer asiento disponible
-                assigned_seat_ids = FlightSegment.objects.filter(
-                    flight=flight,
-                    seat__isnull=False
-                ).values_list("seat_id", flat=True)
-
-                seat = Seat.objects.filter(
-                    airplane=flight.airplane
-                ).exclude(id__in=assigned_seat_ids).first()
-                
-                if not seat:
-                    raise ValidationError(f"No hay asientos disponibles en el vuelo {flight}")
-
-                FlightSegmentService.create(
-                    itinerary=itinerary,
-                    flight=flight,
-                    seat=seat,
-                    price=flight.base_price,
-                    status="confirmed"
-                )
-
-        return last_itinerary
-
-    @staticmethod
     def _generate_unique_reservation_code() -> str:
         """Genera un código de reserva único"""
         reservation_code = str(uuid.uuid4())[:8].upper()
@@ -399,7 +382,7 @@ class ReservationService:
     
     @staticmethod
     def create_reservations_with_seats(passenger_ids: List[int], route_ids: List[int], post_data: dict, status:str) -> Itinerary:
-
+        """Crea reservas pudiendo elegir un asiento disponible"""
         with transaction.atomic():
             passengers = Passenger.objects.filter(id__in=passenger_ids)
             routes = Route.objects.filter(id__in=route_ids)
@@ -460,3 +443,7 @@ class ReservationService:
                 raise ValidationError(" | ".join(errores))
 
             return created_itineraries
+    
+ 
+
+

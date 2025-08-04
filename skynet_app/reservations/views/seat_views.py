@@ -2,9 +2,8 @@ from django.views import View
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from reservations.services.reservations import (
-    SeatService, ReservationService, TicketService
+    SeatService, ReservationService
 )
-import uuid
 
 # Vista que permite al usuario seleccionar manualmente los asientos
 class ChooseSeatView(View):

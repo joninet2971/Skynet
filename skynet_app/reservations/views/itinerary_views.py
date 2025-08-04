@@ -21,14 +21,16 @@ class SearchAndCreateItineraryView(FormView):
 
         try:
             # Buscar posibles rutas usando el servicio find_available_routes
-            route_chains = RouteService.find_available_routes(
-                origin.code, 
-                destination.code, 
-                fecha
+            route_chains, errores = RouteService.find_available_routes(
+                origin.code,
+                destination.code,
+                fecha,
+                passenger_count
             )
-            
+
             if not route_chains:
-                messages.error(self.request, "No se encontró una ruta válida entre esos aeropuertos.")
+                for e in errores:
+                    messages.warning(self.request, e)  # Mostramos todos los errores reales
                 return self.form_invalid(form)
 
             # Guardar en sesión
