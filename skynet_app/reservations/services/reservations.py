@@ -134,9 +134,19 @@ class ItineraryService:
 class FlightSegmentService:
     @staticmethod
     def create(itinerary: Itinerary, flight: Flight, seat: Seat, price: float, status: str) -> FlightSegment:
+        # Validar que el asiento no esté asignado
         if FlightSegment.objects.filter(seat=seat).exists():
-            raise ValidationError("Seat already assigned.")
+            raise ValidationError("The seat is already assigned.")
+
+        # Validar que el pasajero no tenga ya una reserva para ese vuelo
+        if FlightSegment.objects.filter(
+            flight=flight,
+            itinerary__passenger=itinerary.passenger
+        ).exists():
+            raise ValidationError("This passenger already has a reservation for this flight.")
+
         return FlightSegmentRepository.create(itinerary, flight, seat, price, status)
+
 
     @staticmethod
     def update(segment_id: int, data: dict) -> FlightSegment:
@@ -311,53 +321,6 @@ class SeatService:
 
 class ReservationService:
     @staticmethod
-    def create_automatic_reservations(passenger_ids: List[int], route_ids: List[int]) -> Itinerary:
-        """Crea reservas automáticas asignando el primer asiento disponible"""
-        passengers = Passenger.objects.filter(id__in=passenger_ids)
-        routes = Route.objects.filter(id__in=route_ids).select_related(
-            "origin_airport", "destination_airport"
-        )
-
-        last_itinerary = None
-        
-        for passenger in passengers:
-            reservation_code = ReservationService._generate_unique_reservation_code()
-
-            itinerary = ItineraryService.create(
-                passenger=passenger,
-                reservation_code=reservation_code
-            )
-            last_itinerary = itinerary
-
-            for route in routes:
-                flight = Flight.objects.filter(route=route, status="active").first()
-                if not flight:
-                    raise ValidationError(f"No hay vuelo disponible para la ruta {route}")
-                    
-                # Buscar primer asiento disponible
-                assigned_seat_ids = FlightSegment.objects.filter(
-                    flight=flight,
-                    seat__isnull=False
-                ).values_list("seat_id", flat=True)
-
-                seat = Seat.objects.filter(
-                    airplane=flight.airplane
-                ).exclude(id__in=assigned_seat_ids).first()
-                
-                if not seat:
-                    raise ValidationError(f"No hay asientos disponibles en el vuelo {flight}")
-
-                FlightSegmentService.create(
-                    itinerary=itinerary,
-                    flight=flight,
-                    seat=seat,
-                    price=flight.base_price,
-                    status="confirmed"
-                )
-
-        return last_itinerary
-
-    @staticmethod
     def _generate_unique_reservation_code() -> str:
         """Genera un código de reserva único"""
         reservation_code = str(uuid.uuid4())[:8].upper()
@@ -416,7 +379,7 @@ class ReservationService:
                         errores.append(f"Asiento {seat.row}{seat.column} ya está ocupado.")
                         continue
 
-                    FlightSegmentRepository.create(
+                    FlightSegmentService.create(
                         itinerary=itinerary,
                         flight=flight,
                         seat=seat,
