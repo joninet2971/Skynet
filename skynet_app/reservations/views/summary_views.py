@@ -23,6 +23,7 @@ class GroupSummaryView(TemplateView):
                     flights_data = []
                     for seg in segments:
                         flights_data.append({
+                            
                             "flight_number": seg.flight.id,
                             "origin": seg.flight.route.origin_airport.name + " - " + seg.flight.route.origin_airport.city,
                             "destination": seg.flight.route.destination_airport.name + " - " + seg.flight.route.destination_airport.city,
@@ -34,6 +35,7 @@ class GroupSummaryView(TemplateView):
                         })
 
                     itineraries.append({
+                        "id": itinerary.id, 
                         "reservation_code": itinerary.reservation_code,
                         "passenger": {
                             "name": passenger.name,

@@ -33,13 +33,9 @@ class ChooseSeatView(View):
             itineraries = ReservationService.create_reservations_with_seats(
                 passenger_ids, 
                 route_ids, 
-                request.POST
+                request.POST,
+                status="reserved"  
             )
-
-            # Crear un ticket por itinerario
-            for itinerary in itineraries:
-                barcode = str(uuid.uuid4())[:10].upper()
-                TicketService.create(itinerary, barcode)
             
             # Guardamos los IDs en sesión para mostrarlos luego
             request.session["created_itineraries"] = [i.id for i in itineraries]
@@ -50,6 +46,7 @@ class ChooseSeatView(View):
         except Exception as e:
             messages.error(request, f"Error al asignar asientos: {str(e)}")
             return redirect("choose_seat_view")
+        
 
 # Vista que genera itinerarios automáticamente sin selección manual de asientos
 class GenerateItineraryView(View):

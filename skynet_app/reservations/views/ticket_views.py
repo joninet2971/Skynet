@@ -15,15 +15,23 @@ class CreateTicketView(View):
             if not itinerary:
                 messages.error(request, "Itinerario no encontrado.")
                 return redirect("search_route")
+            
+            # Confirmar los asientos antes de emitir ticket
+            print("entre aca")
+            for segment in itinerary.segments.all():
+                print("entre aca 2")
+                if segment.status == "reserved":
+                    print("entre aca 3")
+                    segment.status = "confirmed"
+                    segment.save()
                 
             barcode = str(uuid.uuid4())[:10].upper()
-            TicketService.create(itinerary, barcode)
-            
-            return redirect('view_summary', itinerary_id=itinerary.id)
+            ticket = TicketService.create(itinerary, barcode)
+            return redirect('ticket_detail', ticket_id=ticket.id)
             
         except Exception as e:
             messages.error(request, f"Error creando ticket: {str(e)}")
-            return redirect('view_summary', itinerary_id=itinerary_id)
+            return redirect('group_summary')
         
 
 class TicketDetailView(DetailView):

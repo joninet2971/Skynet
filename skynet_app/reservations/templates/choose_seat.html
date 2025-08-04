@@ -35,8 +35,14 @@
                                 <select name="seat_{{ item.key }}" class="form-select" required>
                                     <option value="">-- Seleccionar asiento --</option>
                                     {% for seat in item.seats %}
-                                        <option value="{{ seat.id }}">
+                                        <option value="{{ seat.id }}"
+                                            {% if seat.segment_status in "reserved,confirmed" %}disabled{% endif %}>
                                             Fila {{ seat.row }} - Columna {{ seat.column }}
+                                            {% if seat.segment_status == "confirmed" %}
+                                                (Ocupado)
+                                            {% elif seat.segment_status == "reserved" %}
+                                                (Reservado)
+                                            {% endif %}
                                         </option>
                                     {% endfor %}
                                 </select>

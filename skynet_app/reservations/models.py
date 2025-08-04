@@ -2,6 +2,8 @@ from django.db import models
 from django.core.exceptions import ValidationError
 from airplane.models import Seat
 from flight.models import Flight
+from django.utils import timezone
+from datetime import timedelta
 
 class Passenger(models.Model):
     STATUS_CHOICES = [
@@ -34,14 +36,21 @@ class FlightSegment(models.Model):#Esta es la tabla intermedia de la que hablamo
     seat = models.ForeignKey(Seat, on_delete=models.SET_NULL, null=True, blank=True)
     status = models.CharField(max_length=50)
     price = models.DecimalField(max_digits=10, decimal_places=2)
+    reserved_at = models.DateTimeField(null=True, blank=True)
 
     def clean(self):
-        if self.seat and FlightSegment.objects.filter(seat=self.seat, flight=self.flight).exclude(id=self.id).exists():
+        if self.seat and FlightSegment.objects.filter(
+            seat=self.seat, 
+            flight=self.flight
+            ).exclude(id=self.id).exists():
             raise ValidationError("Este asiento ya está asignado en este vuelo.")
 
 
     def save(self, *args, **kwargs):
         self.clean()
+        # Si está reservado, actualizá la marca de tiempo
+        if self.status == "reserved" and not self.reserved_at:
+            self.reserved_at = timezone.now()
         super().save(*args, **kwargs)
         self.itinerary.total_price = sum(seg.price for seg in self.itinerary.segments.all())
         self.itinerary.save()

@@ -94,7 +94,6 @@ class SelectItineraryView(View):
         select_route = self.request.session["route_chain_ids_list"]
         
         request.session["route_chain"] = select_route[option_idx]
-        print(request.session["route_chain"])
         return redirect("load_passengers")  # Paso siguiente: cargar pasajeros
 
 
