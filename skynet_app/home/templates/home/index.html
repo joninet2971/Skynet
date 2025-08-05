@@ -269,21 +269,12 @@
     
     <!-- Slides -->
     <div class="carousel-inner">
-        <!-- Slide 1 -->
-        <div class="carousel-item active" style="background-image: url('https://static.flybondi.com/3390x0/filters:format(webp)/f/77475/3390x1002/497c256e3d/regalamos-pasajes_nqn_banner-web-copia.png');">
-        </div>
-        
-        <!-- Slide 2 -->
-        <div class="carousel-item" style="background-image: url('https://static.flybondi.com/2650x0/filters:format(webp)/f/77475/2650x776/fefb82e1d2/banner-web-3.png');">
-        </div>
-        
-        <!-- Slide 3 -->
-        <div class="carousel-item" style="background-image: url('https://media.staticontent.com/media/pictures/c966e570-9efd-4c34-b422-b96a70cad54c');">
-        </div>
-
-        <div class="carousel-item" style="background-image: url('https://kilo-content.aircanada.com/ac/applications/achomebeta/content/1.0.1452/assets/img/page-banner/max-desktop/flights.webp');">
-        </div>
-    </div>
+        {% for img in images %}
+            <div class="carousel-item {% if forloop.first %}active{% endif %}" 
+                 style="background-image: url('{{ img.image.url }}');">
+            </div>
+        {% endfor %}
+    </div>    
     
     <!-- Controls -->
     <button class="carousel-control-prev" type="button" data-bs-target="#mainCarousel" data-bs-slide="prev">

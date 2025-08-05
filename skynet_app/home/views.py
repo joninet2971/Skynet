@@ -1,14 +1,40 @@
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
-from django.shortcuts import redirect, render
+from django.shortcuts import redirect, render, get_object_or_404
 from django.views import View
-from home.forms import LoginForm, RegisterForm
+from home.forms import LoginForm, RegisterForm, CarouselImageForm
 from reservations.forms import SearchRouteForm 
+from home.models import CarouselImage
 
 def home_view(request):
     form = SearchRouteForm()
-    return render(request, "home/index.html", {"form": form})
+    images = CarouselImage.objects.all()
+    return render(request, "home/index.html", {
+        "form": form,
+        "images": images
+    })
+
+def manage_carousel_view(request):
+    images = CarouselImage.objects.all()
+
+    if request.method == 'POST':
+        form = CarouselImageForm(request.POST, request.FILES)
+        if form.is_valid():
+            form.save()
+            return redirect('manage_carousel')
+    else:
+        form = CarouselImageForm()
+
+    return render(request, "home/manage_carousel.html", {
+        "form": form,
+        "images": images
+    })
+
+def delete_carousel_image_view(request, image_id):
+    image = get_object_or_404(CarouselImage, id=image_id)
+    image.delete()
+    return redirect('manage_carousel')
         
 class LogoutView(View):
     def get(self, request):
@@ -76,3 +102,4 @@ class LoginView(View):
             "home/auth/login.html", 
             {'form': form}
         ) 
+
