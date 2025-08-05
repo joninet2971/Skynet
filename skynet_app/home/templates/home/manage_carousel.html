@@ -1,0 +1,58 @@
+{% extends "home/base.html" %}
+
+{% block title %}Gestionar Carousel - Skynet{% endblock %}
+{% block header_title %}Gestión de Imágenes del Carousel{% endblock %}
+
+{% block content %}
+
+<!-- Formulario para agregar imagen -->
+<div class="card mb-4">
+  <div class="card-header">
+    <h5 class="mb-0"><i class="fas fa-plus me-2"></i>Agregar Imagen</h5>
+  </div>
+  <div class="card-body">
+    <form method="post" enctype="multipart/form-data" class="row g-3">
+      {% csrf_token %}
+      <div class="col-md-4">
+        {{ form.title.label_tag }} {{ form.title }}
+      </div>
+      <div class="col-md-4">
+        {{ form.image.label_tag }} {{ form.image }}
+      </div>
+      <div class="col-12">
+        <button type="submit" class="btn btn-success"><i class="fas fa-save me-1"></i>Guardar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Lista de imágenes -->
+<div class="card">
+  <div class="card-header">
+    <h5 class="mb-0"><i class="fas fa-images me-2"></i>Imágenes Actuales</h5>
+  </div>
+  <div class="card-body">
+    <div class="row">
+      {% for img in images %}
+      <div class="col-md-3 mb-3">
+        <div class="card shadow-sm">
+          <img src="{{ img.image.url }}" class="card-img-top" style="height: 150px; object-fit: cover;">
+          <div class="card-body p-2">
+            <p class="mb-1"><strong>{{ img.title }}</strong></p>
+            <div class="mt-2">
+              <a href="{% url 'delete_carousel_image' img.id %}" class="btn btn-sm btn-danger w-100"
+                 onclick="return confirm('¿Seguro que quieres eliminar esta imagen?')">
+                <i class="fas fa-trash-alt"></i> Eliminar
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+      {% empty %}
+      <p class="text-muted">No hay imágenes cargadas.</p>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+{% endblock %}
