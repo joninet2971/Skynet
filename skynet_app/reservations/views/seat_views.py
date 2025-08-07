@@ -5,7 +5,7 @@ from reservations.services.reservations import (
     SeatService, ReservationService
 )
 
-# Vista que permite al usuario seleccionar manualmente los asientos
+# Permite al usuario seleccionar manualmente los asientos
 class ChooseSeatView(View):
     template_name = "choose_seat.html"
 
@@ -46,7 +46,6 @@ class ChooseSeatView(View):
             messages.error(request, f"Error al asignar asientos: {str(e)}")
             return redirect("choose_seat_view")
         
-
 # Vista que genera itinerarios automáticamente sin selección manual de asientos
 class GenerateItineraryView(View):
     def get(self, request):

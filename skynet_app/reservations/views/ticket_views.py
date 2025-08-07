@@ -17,11 +17,10 @@ class CreateTicketView(View):
                 return redirect("search_route")
             
             # Confirmar los asientos antes de emitir ticket
-            print("entre aca")
+            
             for segment in itinerary.segments.all():
-                print("entre aca 2")
+               
                 if segment.status == "reserved":
-                    print("entre aca 3")
                     segment.status = "confirmed"
                     segment.save()
                 

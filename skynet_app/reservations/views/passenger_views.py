@@ -4,7 +4,7 @@ from django.contrib import messages
 from reservations.forms import PassengerForm
 from reservations.services.reservations import PassengerService
 
-# Vista para cargar múltiples pasajeros en base a la cantidad seleccionada
+# Carga múltiples pasajeros en base a la cantidad seleccionada
 class LoadPassengersView(View):
     template_name = "create_passenger.html"
 
@@ -13,7 +13,7 @@ class LoadPassengersView(View):
         return render(request, self.template_name, {
             "form": PassengerForm(),
             "count": passenger_count,
-            "range": range(passenger_count)
+            "range": range(passenger_count) #Repite los formularios por la cantidad de pasajeros
         })
 
     def post(self, request):

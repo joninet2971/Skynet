@@ -13,11 +13,12 @@ class GroupSummaryView(TemplateView):
 
         try:
             itineraries = []
-            for iid in itinerary_ids:
-                itinerary = ItineraryService.get(iid)
+            for idx in itinerary_ids:
+                itinerary = ItineraryService.get(idx)
                 if itinerary:
                     passenger = itinerary.passenger
                     segments = FlightSegmentService.list_by_itinerary(itinerary)
+                    #list_by_itinerary Traé todos los segmentos de este itinerario, y además cargá de una vez el vuelo y el asiento asociado a cada segmento (con JOINs), para no hacer más queries después.
                     ticket = TicketService.get_by_itinerary(itinerary)
 
                     flights_data = []

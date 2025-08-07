@@ -138,8 +138,8 @@ class ItineraryService:
 class FlightSegmentService:
     @staticmethod
     def create(itinerary: Itinerary, flight: Flight, seat: Seat, price: float, status: str) -> FlightSegment:
-        # Validar que el asiento no esté asignado
-        if FlightSegment.objects.filter(seat=seat).exists():
+        # Validar que el asiento no esté asignado        
+        if FlightSegment.objects.filter(seat=seat, flight=flight).exists():
             raise ValidationError("The seat is already assigned.")
 
         # Validar que el pasajero no tenga ya una reserva para ese vuelo
@@ -368,6 +368,7 @@ class SeatService:
             flight=flight
         ).exists()
 
+    
 
 # -------------------- Reservation Service --------------------
 

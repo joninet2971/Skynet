@@ -39,12 +39,14 @@ class FlightSegment(models.Model):#Esta es la tabla intermedia de la que hablamo
     reserved_at = models.DateTimeField(null=True, blank=True)
 
     def clean(self):
-        if self.seat and FlightSegment.objects.filter(
-            seat=self.seat, 
-            flight=self.flight
-            ).exclude(id=self.id).exists():
-            raise ValidationError("Este asiento ya está asignado en este vuelo.")
+        if self.seat and self.flight:
+            conflict = FlightSegment.objects.filter(
+                seat=self.seat,
+                flight=self.flight
+            ).exclude(id=self.id)
 
+            if conflict.exists():
+                raise ValidationError("Este asiento ya está asignado en este vuelo.")
 
     def save(self, *args, **kwargs):
         self.clean()

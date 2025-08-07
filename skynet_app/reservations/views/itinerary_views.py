@@ -8,7 +8,7 @@ from collections import namedtuple
 # Modelos
 from flight.models import Flight, Route
 
-# Vista para buscar rutas posibles y guardar los datos en sesión
+#busca rutas posibles y guardar los datos en sesión
 class SearchAndCreateItineraryView(FormView):
     template_name = 'search_route.html'
     form_class = SearchRouteForm
@@ -30,7 +30,7 @@ class SearchAndCreateItineraryView(FormView):
 
             if not route_chains:
                 for e in errores:
-                    messages.warning(self.request, e)  # Mostramos todos los errores reales
+                    messages.warning(self.request, e)  # Mostramos todos los errores
                 return self.form_invalid(form)
 
             # Guardar en sesión
@@ -49,7 +49,7 @@ class SearchAndCreateItineraryView(FormView):
         messages.error(self.request, "Por favor corregí los errores del formulario.")
         return super().form_invalid(form)
     
-# Vista para mostrar las opciones de itinerario posibles
+# Muestra las opciones de itinerario posibles
 class ChooseItineraryView(TemplateView):
     template_name = "choose_itinerary.html"
 
@@ -59,14 +59,17 @@ class ChooseItineraryView(TemplateView):
         options = []
         route_full = []
 
-        for idx, chain_ids in enumerate(route_chains_ids, 1):
+        for idx, chain_ids in enumerate(route_chains_ids, 1): 
+            #route_chains_ids = [["A", "B", "C"], ["D", "E"]]  resultado 1: ['A', 'B', 'C'] - 2: ['D', 'E']
+
             duration = 0
             total_price = 0
             routes = Route.objects.filter(id__in=chain_ids).select_related("origin_airport", "destination_airport")
+            #Busca los objetos Route reales para los IDs de la cadena.
             if not routes:
                 continue
             flight = Flight.objects.filter(route__in=chain_ids)
-                    
+            #Busca los vuelos asociados a esas rutas (cada vuelo tiene duración y precio).        
             route_full.append(routes)  # Guardamos todas las rutas reales
 
             summary = " → ".join([r.origin_airport.code for r in routes] + [routes.last().destination_airport.code])
@@ -78,7 +81,7 @@ class ChooseItineraryView(TemplateView):
 
         context["itineraries"] = options
         context["route_options"] = route_chains_ids
-        context["rutas_completas"] = route_full 
+        context["rutas_completas"] = route_full #por el momento no se usa
         context["origin"] = options[0].route_summary.split(" → ")[0] if options else None
         context["destination"] = options[0].route_summary.split(" → ")[-1] if options else None
         context["date"] = self.request.session.get("search_date")
@@ -101,3 +104,4 @@ class SelectItineraryView(View):
 
 
 ItineraryOption = namedtuple("ItineraryOption", ["id", "route_summary", "duration", "total_price"])
+#Para no crear un classe nueva, y esto guardaria ej: opcion = ItineraryOption(id=1, route_summary="EZE → COR → MDZ", duration=180, total_price=15000.0)
