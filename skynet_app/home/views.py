@@ -2,17 +2,28 @@ from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.shortcuts import redirect, render, get_object_or_404
+from django.utils.translation import activate, get_language
 from django.views import View
 from home.forms import LoginForm, RegisterForm, CarouselImageForm
 from reservations.forms import SearchRouteForm 
 from home.models import CarouselImage
 
 def home_view(request):
+    lang = request.GET.get('lang')
+    if lang in ['es', 'en', 'pt']:
+        activate(lang)
+
+    current_lang = get_language()
     form = SearchRouteForm()
     images = CarouselImage.objects.all()
+
+    languages = [l for l in ['es', 'en', 'pt'] if l != current_lang]
+
     return render(request, "home/index.html", {
         "form": form,
-        "images": images
+        "images": images,
+        "current_lang": current_lang,
+        "languages": languages
     })
 
 def manage_carousel_view(request):

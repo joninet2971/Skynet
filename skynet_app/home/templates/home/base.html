@@ -1,9 +1,10 @@
 <!DOCTYPE html>
+{% load i18n %}
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}AeroLine - Vuelos al mejor precio{% endblock %}</title>
+    <title>{% block title %}{% trans "AeroLinea - Vuelos al mejor precio" %}{% endblock %}</title>
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Font Awesome -->
@@ -12,6 +13,9 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <!-- DataTables CSS -->
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flag-icons/css/flag-icons.min.css">
+
     <!-- Estilos personalizados -->
     <style>
         :root {
@@ -309,16 +313,16 @@
       <div class="modal-content border-warning">
         <div class="modal-header bg-warning text-dark">
           <h5 class="modal-title" id="confirmModalLabel">
-            <i class="fas fa-exclamation-triangle me-2"></i> Confirm Action
+            <i class="fas fa-exclamation-triangle me-2"></i> {% trans "Confirmar acción" %}
           </h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body" id="confirmModalMessage">
-          Are you sure you want to proceed?
+         {% trans "¿Está seguro de confirmar?" %}
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-          <a href="#" class="btn btn-danger" id="confirmModalAction">Yes, delete</a>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{% trans "Cancelar" %}</button>
+          <a href="#" class="btn btn-danger" id="confirmModalAction">{% trans "Si, eliminar" %}</a>
         </div>
       </div>
     </div>
@@ -333,18 +337,24 @@
             </h4>
         </div>        
         <ul class="nav flex-column">
-            {% if user.is_authenticated %}
+            {% if current_user_name %}
+                <li class="nav-item">
+                    <span class="nav-link d-flex align-items-center">
+                        <i class="fas fa-user-circle me-2"></i>
+                        {% trans "Bienvenido" %}, {{ current_user_name }} 👋
+                    </span>
+                </li>
                 <li class="nav-item">
                     <a class="nav-link" href="{% url 'logout' %}">
                         <i class="fas fa-user-circle"></i>
-                        <span>{{ user.username }} - Logout</span>
+                        <span> {% trans "Salir" %} </span>
                     </a>
                 </li>
             {% else %}
                 <li class="nav-item">
                     <a class="nav-link" href="{% url 'login' %}">
                         <i class="fas fa-sign-in-alt"></i>
-                        <span>Login</span>
+                        <span>{% trans "Ingresa" %}</span>
                     </a>
                 </li>
             {% endif %}
@@ -353,38 +363,38 @@
             <li class="nav-item">
                 <a class="nav-link" href="{% url 'airport_list' %}">
                     <i class="fas fa-tachometer-alt"></i>
-                    <span>Airport</span>
+                    <span>{% trans "Aeropuertos" %}</span>
                 </a>
             </li>
             <li class="nav-item">
                 <a class="nav-link" href="{% url 'route_list' %}">
                     <i class="fas fa-plane-departure"></i>
-                    <span>Routes</span>
+                    <span>{% trans "Rutas" %}</span>
                 </a>
             </li>
             <li class="nav-item">
                 <a class="nav-link" href="{% url 'flight_list' %}">
                     <i class="fas fa-users"></i>
-                    <span>Flights</span>
+                    <span>{% trans "Vuelos" %}</span>
                 </a>
             </li>
             <li class="nav-item">
                 <a class="nav-link" href="{% url 'airplane_list' %}">
                     <i class="fas fa-plane"></i>
-                    <span>Aviones</span>
+                    <span>{% trans "Aviones" %}</span>
                 </a>
             </li>
             <li class="nav-item">
                 <a class="nav-link" href="{% url 'manage_carousel' %}">
                     <i class="fas fa-images"></i>
-                    <span>Carousel Imágenes</span>
+                    <span>{% trans "Carrusel de Imágenes" %}</span>
                 </a>
             </li>            
             {% endif %}
             <li class="nav-item">
                 <a class="nav-link" href="{% url 'create_itinerary' %}">
                     <i class="fas fa-compass"></i>
-                    <span>Vuelos</span>
+                    <span>{% trans "Buscá tu vuelo" %}</span>
                 </a>
             </li>
         </ul>
