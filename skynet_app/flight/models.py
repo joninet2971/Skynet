@@ -1,11 +1,12 @@
 from django.db import models
+from django.utils.translation import gettext_lazy as _
 from airplane.models import Airplane
 
 class Airport(models.Model):
-    name = models.CharField(max_length=100)
-    code = models.CharField(max_length=10, unique=True)  # Ej: EZE, BRC, etc.
-    city = models.CharField(max_length=100)
-    country = models.CharField(max_length=100)
+    name = models.CharField(_("Nombre Aeropuerto"),max_length=100)
+    code = models.CharField(_("Código Aeropuerto"),max_length=10, unique=True)  # Ej: EZE, BRC, etc.
+    city = models.CharField(_("Ciudad"),max_length=100)
+    country = models.CharField(_("País"),max_length=100)
 
     def __str__(self):
         return f"{self.name} ({self.code})"

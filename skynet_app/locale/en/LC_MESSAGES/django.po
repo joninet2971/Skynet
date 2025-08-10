@@ -1,0 +1,198 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-08-10 17:24-0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: flight/models.py:6
+msgid "Nombre Aeropuerto"
+msgstr "Airport Name"
+
+#: flight/models.py:7
+msgid "Código Aeropuerto"
+msgstr "Code Airport"
+
+#: flight/models.py:8
+msgid "Ciudad"
+msgstr "City"
+
+#: flight/models.py:9
+msgid "País"
+msgstr "Country"
+
+#: home/templates/home/base.html:7
+msgid "AeroLinea - Vuelos al mejor precio"
+msgstr "AeroLine - Flights at the best price"
+
+#: home/templates/home/base.html:316
+msgid "Confirmar acción"
+msgstr "Confirm Action"
+
+#: home/templates/home/base.html:321
+msgid "¿Está seguro de confirmar?"
+msgstr "Are you sure you want to proceed?"
+
+#: home/templates/home/base.html:324
+msgid "Cancelar"
+msgstr "Cancel"
+
+#: home/templates/home/base.html:325
+msgid "Si, eliminar"
+msgstr "Yes, delete"
+
+#: home/templates/home/base.html:344
+msgid "Bienvenido"
+msgstr "Welcome"
+
+#: home/templates/home/base.html:350
+msgid "Salir"
+msgstr "Logout"
+
+#: home/templates/home/base.html:357
+msgid "Ingresa"
+msgstr "Login"
+
+#: home/templates/home/base.html:366
+msgid "Aeropuertos"
+msgstr "Airport"
+
+#: home/templates/home/base.html:372
+msgid "Rutas"
+msgstr "Routes"
+
+#: home/templates/home/base.html:378
+msgid "Vuelos"
+msgstr "Flights"
+
+#: home/templates/home/base.html:384
+msgid "Aviones"
+msgstr "Airplanes"
+
+#: home/templates/home/base.html:390
+msgid "Carrusel de Imágenes"
+msgstr "Image Carousel"
+
+#: home/templates/home/base.html:397
+msgid "Buscá tu vuelo"
+msgstr "Find you flight"
+
+#: home/templates/home/index.html:6
+msgid "Bienvenido a Skynet - Vuelos al mejor precio"
+msgstr "Welcome to Skynet - Flights at the best price"
+
+#: home/templates/home/index.html:310
+msgid "Anterior"
+msgstr "Previous"
+
+#: home/templates/home/index.html:314
+msgid "Siguiente"
+msgstr "Next"
+
+#: home/templates/home/index.html:325
+msgid "Origen"
+msgstr "Origin"
+
+#: home/templates/home/index.html:329
+msgid "Destino"
+msgstr "Destination"
+
+#: home/templates/home/index.html:333
+msgid "Fecha"
+msgstr "Date"
+
+#: home/templates/home/index.html:337
+msgid "Pasajeros"
+msgstr "Passengers"
+
+#: home/templates/home/index.html:342
+msgid "Buscar"
+msgstr "Search"
+
+#: home/templates/home/index.html:353
+msgid "Destinos Populares"
+msgstr "Popular Destinations"
+
+#: home/templates/home/index.html:361
+msgid "La ciudad que nunca duerme, con su encanto único y su vibrante cultura."
+msgstr "The city that never sleeps, with its unique charm and vibrant culture."
+
+#: home/templates/home/index.html:362
+msgid "Desde $15.999"
+msgstr "From $15,999"
+
+#: home/templates/home/index.html:363 home/templates/home/index.html:375
+#: home/templates/home/index.html:387
+msgid "Ver vuelos"
+msgstr "View Flights"
+
+#: home/templates/home/index.html:373
+msgid "Descubrí las sierras y la rica historia de esta hermosa provincia."
+msgstr ""
+"Discover the mountains and the rich history of this beautiful province."
+
+#: home/templates/home/index.html:374
+msgid "Desde $12.999"
+msgstr "From $12,999"
+
+#: home/templates/home/index.html:385
+msgid "Tierra del buen vino y los paisajes montañosos inolvidables."
+msgstr "Land of fine wine and unforgettable mountain landscapes."
+
+#: home/templates/home/index.html:386
+msgid "Desde $14.999"
+msgstr "From $14,999"
+
+#: home/templates/home/index.html:405
+msgid "Hasta 12 Cuotas"
+msgstr "Up to 12 Installments"
+
+#: home/templates/home/index.html:406
+msgid "Paga en cuotas sin interés con todas las tarjetas de crédito."
+msgstr "Pay in interest-free installments with all credit cards."
+
+#: home/templates/home/index.html:415
+msgid "Equipaje Incluido"
+msgstr "Baggage Included"
+
+#: home/templates/home/index.html:416
+msgid "Llevá hasta 10kg de equipaje de mano sin cargo adicional."
+msgstr "Carry up to 10kg of hand luggage at no extra cost."
+
+#: home/templates/home/index.html:425
+msgid "Atención 24/7"
+msgstr "24/7 Support"
+
+#: home/templates/home/index.html:426
+msgid "Nuestro equipo está disponible para ayudarte en todo momento."
+msgstr "Our team is available to help you at any time."
+
+#: home/templates/home/index.html:436
+msgid "¡No te pierdas nuestras ofertas!"
+msgstr "Don't miss our offers!"
+
+#: home/templates/home/index.html:437
+msgid ""
+"Suscribite a nuestro newsletter y recibí las mejores ofertas en tu correo."
+msgstr "Subscribe to our newsletter and get the best deals in your inbox."
+
+#: home/templates/home/index.html:440
+msgid "Tu correo electrónico"
+msgstr "Your email address"
+
+#: home/templates/home/index.html:441
+msgid "SUSCRIBIRME"
+msgstr "SUBSCRIBE"

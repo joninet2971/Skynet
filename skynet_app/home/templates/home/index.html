@@ -1,8 +1,9 @@
 {% extends 'home/base.html' %}
+{% load i18n %}
 {% load widget_tweaks %}
 {% load seat_tags %}
 
-{% block title %}Bienvenido a Skynet - Vuelos al mejor precio{% endblock %}
+{% block title %}{% trans "Bienvenido a Skynet - Vuelos al mejor precio" %}{% endblock %}
 
 {% block extra_js %}
 {{ block.super }}
@@ -257,6 +258,33 @@
 {% endblock %}
 
 {% block content %}
+
+<div>
+    <form method="get" style="margin-top:10px;">
+        <select name="lang" class="form-select form-select-sm" onchange="this.form.submit()">
+            <option value="{{ current_lang }}">
+                {% if current_lang == 'es' %}
+                    🇪🇸 Español
+                {% elif current_lang == 'en' %}
+                    🇬🇧 English
+                {% elif current_lang == 'pt' %}
+                    🇧🇷 Português
+                {% endif %}
+            </option>
+            {% for lang in languages %}
+                <option value="{{ lang }}">
+                    {% if lang == 'es' %}
+                        🇪🇸 Español
+                    {% elif lang == 'en' %}
+                        🇬🇧 English
+                    {% elif lang == 'pt' %}
+                        🇧🇷 Português
+                    {% endif %}
+                </option>
+            {% endfor %}
+        </select>
+    </form>
+</div>
 <!-- Hero Section with Carousel -->
 <div id="mainCarousel" class="carousel slide hero-carousel rounded-4 overflow-hidden" data-bs-ride="carousel" data-bs-interval="3000">
     <!-- Indicators -->
@@ -279,11 +307,11 @@
     <!-- Controls -->
     <button class="carousel-control-prev" type="button" data-bs-target="#mainCarousel" data-bs-slide="prev">
         <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-        <span class="visually-hidden">Anterior</span>
+        <span class="visually-hidden">{% trans "Anterior" %}</span>
     </button>
     <button class="carousel-control-next" type="button" data-bs-target="#mainCarousel" data-bs-slide="next">
         <span class="carousel-control-next-icon" aria-hidden="true"></span>
-        <span class="visually-hidden">Siguiente</span>
+        <span class="visually-hidden">{% trans "Siguiente" %}</span>
     </button>
 </div>
 
@@ -294,24 +322,24 @@
         {% csrf_token %}
             <div class="row g-3">
                 <div class="col-md-3">
-                        <label for="{{ form.origin.id_for_label }}" class="form-label">Origen</label>
+                        <label for="{{ form.origin.id_for_label }}" class="form-label">{% trans "Origen" %}</label>
                         {{ form.origin|add_class:"form-control" }}
                 </div>
                 <div class="col-md-3">
-                    <label for="{{ form.destination.id_for_label }}" class="form-label">Destino</label>
+                    <label for="{{ form.destination.id_for_label }}" class="form-label">{% trans "Destino" %}</label>
                     {{ form.destination|add_class:"form-control" }}
                 </div>
                 <div class="col-md-2">
-                    <label for="{{ form.date.id_for_label }}" class="form-label">Fecha</label>
+                    <label for="{{ form.date.id_for_label }}" class="form-label">{% trans "Fecha" %}</label>
                     {{ form.date|add_class:"form-control" }}
                 </div>
                 <div class="col-md-2">
-                    <label for="{{ form.passengers.id_for_label }}" class="form-label">Pasajeros</label>
+                    <label for="{{ form.passengers.id_for_label }}" class="form-label">{% trans "Pasajeros" %}</label>
                     {{ form.passengers|add_class:"form-control" }}
                 </div>
                 <div class="col-md-2 d-flex align-items-end">
                     <button type="submit" class="btn btn-primary w-100">
-                        <i class="fas fa-search me-1"></i> Buscar
+                        <i class="fas fa-search me-1"></i> {% trans "Buscar" %}
                     </button>
                 </div>
             </div>
@@ -322,7 +350,7 @@
 <!-- Destinations Section -->
 <section class="destinations-section">
     <div class="container">
-        <h2 class="section-title">Destinos Populares</h2>
+        <h2 class="section-title">{% trans "Destinos Populares" %}</h2>
         <div class="row">
             <!-- Destination Card 1 -->
             <div class="col-md-4">
@@ -330,9 +358,9 @@
                     <img src="https://media.staticontent.com/media/pictures/faf03175-d651-41ce-89be-58136b0890f4/300x200" class="card-img-top destination-img" alt="Buenos Aires">
                     <div class="card-body">
                         <h5 class="card-title">Mar del plata</h5>
-                        <p class="card-text">La ciudad que nunca duerme, con su encanto único y su vibrante cultura.</p>
-                        <div class="price">Desde $15.999</div>
-                        <a href="#" class="btn btn-outline-warning">Ver vuelos</a>
+                        <p class="card-text">{% trans "La ciudad que nunca duerme, con su encanto único y su vibrante cultura." %}</p>
+                        <div class="price">{% trans "Desde $15.999" %}</div>
+                        <a href="#" class="btn btn-outline-warning">{% trans "Ver vuelos" %}</a>
                     </div>
                 </div>
             </div>
@@ -342,9 +370,9 @@
                     <img src="https://media.staticontent.com/media/pictures/e43505a4-c488-495c-a466-58763d1d6fed/300x200" class="card-img-top destination-img" alt="Córdoba">
                     <div class="card-body">
                         <h5 class="card-title">Córdoba</h5>
-                        <p class="card-text">Descubrí las sierras y la rica historia de esta hermosa provincia.</p>
-                        <div class="price">Desde $12.999</div>
-                        <a href="#" class="btn btn-outline-warning">Ver vuelos</a>
+                        <p class="card-text">{% trans "Descubrí las sierras y la rica historia de esta hermosa provincia." %}</p>
+                        <div class="price">{% trans "Desde $12.999" %}</div>
+                        <a href="#" class="btn btn-outline-warning">{% trans "Ver vuelos" %}</a>
                     </div>
                 </div>
             </div>
@@ -354,9 +382,9 @@
                     <img src="https://media.staticontent.com/media/pictures/9c9c9803-adc1-4819-91f4-b6312b3dd504/300x200" class="card-img-top destination-img" alt="Mendoza">
                     <div class="card-body">
                         <h5 class="card-title">Mendoza</h5>
-                        <p class="card-text">Tierra del buen vino y los paisajes montañosos inolvidables.</p>
-                        <div class="price">Desde $14.999</div>
-                        <a href="#" class="btn btn-outline-warning">Ver vuelos</a>
+                        <p class="card-text">{% trans "Tierra del buen vino y los paisajes montañosos inolvidables." %}</p>
+                        <div class="price">{% trans "Desde $14.999" %}</div>
+                        <a href="#" class="btn btn-outline-warning">{% trans "Ver vuelos" %}</a>
                     </div>
                 </div>
             </div>
@@ -374,8 +402,8 @@
                     <div class="feature-icon">
                         <i class="fas fa-percentage"></i>
                     </div>
-                    <h3 class="feature-title">Hasta 12 Cuotas</h3>
-                    <p>Paga en cuotas sin interés con todas las tarjetas de crédito.</p>
+                    <h3 class="feature-title">{% trans "Hasta 12 Cuotas" %}</h3>
+                    <p>{% trans "Paga en cuotas sin interés con todas las tarjetas de crédito." %}</p>
                 </div>
             </div>
             <!-- Feature 2 -->
@@ -384,8 +412,8 @@
                     <div class="feature-icon">
                         <i class="fas fa-suitcase-rolling"></i>
                     </div>
-                    <h3 class="feature-title">Equipaje Incluido</h3>
-                    <p>Llevá hasta 10kg de equipaje de mano sin cargo adicional.</p>
+                    <h3 class="feature-title">{% trans "Equipaje Incluido" %}</h3>
+                    <p>{% trans "Llevá hasta 10kg de equipaje de mano sin cargo adicional." %}</p>
                 </div>
             </div>
             <!-- Feature 3 -->
@@ -394,8 +422,8 @@
                     <div class="feature-icon">
                         <i class="fas fa-headset"></i>
                     </div>
-                    <h3 class="feature-title">Atención 24/7</h3>
-                    <p>Nuestro equipo está disponible para ayudarte en todo momento.</p>
+                    <h3 class="feature-title">{% trans "Atención 24/7" %}</h3>
+                    <p>{% trans "Nuestro equipo está disponible para ayudarte en todo momento." %}</p>
                 </div>
             </div>
         </div>
@@ -405,12 +433,12 @@
 <!-- Newsletter Section -->
 <section class="newsletter-section">
     <div class="container">
-        <h2 class="newsletter-title">¡No te pierdas nuestras ofertas!</h2>
-        <p class="mb-4">Suscribite a nuestro newsletter y recibí las mejores ofertas en tu correo.</p>
+        <h2 class="newsletter-title">{% trans "¡No te pierdas nuestras ofertas!" %}</h2>
+        <p class="mb-4">{% trans "Suscribite a nuestro newsletter y recibí las mejores ofertas en tu correo." %}</p>
         <form class="newsletter-form">
             <div class="input-group">
-                <input type="email" class="form-control" placeholder="Tu correo electrónico" required>
-                <button class="btn btn-warning fw-bold" type="submit">SUSCRIBIRME</button>
+                <input type="email" class="form-control" placeholder="{% trans 'Tu correo electrónico' %}" required>
+                <button class="btn btn-warning fw-bold" type="submit">{% trans "SUSCRIBIRME" %}</button>
             </div>
         </form>
     </div>
