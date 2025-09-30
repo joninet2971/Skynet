@@ -30,6 +30,7 @@ DEBUG = True
 ALLOWED_HOSTS = []
 
 
+
 # Application definition
 
 INSTALLED_APPS = [
@@ -41,11 +42,12 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "widget_tweaks",
 
-
     "airplane",
     "flight",
     "home",
     "reservations",
+    'rest_framework',
+    'api'
 ]
 
 MIDDLEWARE = [
@@ -58,7 +60,7 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
-ROOT_URLCONF = "skynet_app.urls"
+ROOT_URLCONF = "config.urls"
 
 TEMPLATES = [
     {
@@ -70,7 +72,7 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
-                'skynet_app.context_processors.get_time_data'
+                'config.context_processors.get_time_data'
             ],
         },
     },
@@ -84,7 +86,7 @@ MESSAGE_TAGS = {
     message_constants.ERROR: 'danger',
 }
 
-WSGI_APPLICATION = "skynet_app.wsgi.application"
+WSGI_APPLICATION = "config.wsgi.application"
 
 
 # Database
@@ -149,3 +151,33 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+#import logging
+#import sentry_sdk
+#from sentry_sdk.integrations.django import DjangoIntegration
+#from sentry_sdk.integrations.logging import LoggingIntegration
+#
+#sentry_logging = LoggingIntegration(
+#    level=logging.INFO,
+#    event_level=logging.ERROR
+#)
+#
+#sentry_sdk.init(
+#    dsn="https://8291d5a65d4ab055d8e200eac720bf53@o4509805691666432.ingest.us.sentry.io/4509805727383552",
+#
+#    # Add data like request headers and IP for users,
+#    # see https://docs.sentry.io/platforms/python/data-management/data-collected/ for more info
+#    send_default_pii=True,
+#    integrations=[
+#        DjangoIntegration(),
+#        sentry_logging
+#    ]
+#)
+
+REST_FRAMEWORK = {
+    # Use Django's standard `django.contrib.auth` permissions,
+    # or allow read-only access for unauthenticated users.
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.AllowAny'
+    ]
+}

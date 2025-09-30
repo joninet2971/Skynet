@@ -7,9 +7,18 @@ from home.forms import LoginForm, RegisterForm, CarouselImageForm
 from reservations.forms import SearchRouteForm 
 from home.models import CarouselImage
 
+import logging
+
+logger = logging.getLogger(__name__)
+
 def home_view(request):
     form = SearchRouteForm()
     images = CarouselImage.objects.all()
+    logger.error(
+        "Ingresando a view",
+        exc_info=True,
+        extra={"Contenido del error"}
+        )
     return render(request, "home/index.html", {
         "form": form,
         "images": images

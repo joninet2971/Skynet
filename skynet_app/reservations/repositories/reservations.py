@@ -8,6 +8,7 @@ from airplane.models import Seat
 class PassengerRepository:
     @staticmethod
     def create(**data) -> Passenger:
+        # TODO: 
         return Passenger.objects.create(**data)
 
     @staticmethod
