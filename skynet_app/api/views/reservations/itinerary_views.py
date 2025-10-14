@@ -2,12 +2,13 @@ from rest_framework.views import APIView
 from rest_framework import status, permissions
 from rest_framework.response import Response
 
-from api.serializers.reservations.serializers import SearchRouteSerializer
+from api.serializers.reservations.serializers import SearchRouteSerializer, ChooseItinerarySerializer
 from reservations.services.reservations import RouteService
 
 from flight.models import Flight, Route
 
 from services.calculate_data_route_chain import calc_route_chain
+from ...utils.token_store import save_itineraries, get_itineraries, delete_itineraries
 
 
 class SearchAndCreateItineraryAPI(APIView):
@@ -40,15 +41,18 @@ class SearchAndCreateItineraryAPI(APIView):
                 )
 
             # Cálculo de opciones (JSON-serializable)
-            calc = calc_route_chain(route_chains, Route.objects, Flight.objects)
+            options = calc_route_chain(route_chains, Route.objects, Flight.objects)
 
-            # En API REST devolvemos los datos (stateless). Si querés sesión, ver nota abajo.
+            tokenItineraries = save_itineraries(options["itineraries"])
+
+            # En API REST devolvemos los datos.
             payload = {
+                "tokenItineraries":tokenItineraries,
                 "search_date": str(fecha),
-                "origin": calc["origin"],
-                "destination": calc["destination"],
+                "origin": options["origin"],
+                "destination": options["destination"],
                 "passenger_count": passenger_count,
-                "itineraries": calc["itineraries"],
+                "itineraries": options["itineraries"],
 
             }
 
@@ -59,79 +63,35 @@ class SearchAndCreateItineraryAPI(APIView):
                 {"errors": [f"Error buscando rutas: {str(e)}"]},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-from django.views.generic import FormView, TemplateView, View
-from django.shortcuts import redirect
-from django.contrib import messages
-
-
-    
-# Muestra las opciones de itinerario posibles
-class ChooseItineraryView(TemplateView):
-    template_name = "choose_itinerary.html"
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        route_chains_ids = self.request.session.get("route_chain_ids_list", []) #Este valor es una lista de listas con IDs de rutas posibles, por ejemplo:[[12], [4, 7], [5, 9, 11]]
-        options = []
-        route_full = []
-
-        for idx, chain_ids in enumerate(route_chains_ids, 1): 
-            #route_chains_ids = [["A", "B", "C"], ["D", "E"]]  resultado 1: ['A', 'B', 'C'] - 2: ['D', 'E']
-
-            duration = 0
-            total_price = 0
-            routes = Route.objects.filter(id__in=chain_ids).select_related("origin_airport", "destination_airport")
-            #Busca los objetos Route reales para los IDs de la cadena.
-            if not routes:
-                continue
-            flight = Flight.objects.filter(route__in=chain_ids)
-            #Busca los vuelos asociados a esas rutas (cada vuelo tiene duración y precio).        
-            route_full.append(routes)  # Guardamos todas las rutas reales
-
-            summary = " → ".join([r.origin_airport.code for r in routes] + [routes.last().destination_airport.code])
-            
-            duration = sum(r.route.estimated_duration for r in flight)
-            total_price = sum(a.base_price for a in flight)
-            options.append(ItineraryOption(idx, summary, duration, total_price))
-         
-
-        context["itineraries"] = options
-        context["route_options"] = route_chains_ids
-        context["rutas_completas"] = route_full #por el momento no se usa
-        context["origin"] = options[0].route_summary.split(" → ")[0] if options else None
-        context["destination"] = options[0].route_summary.split(" → ")[-1] if options else None
-        context["date"] = self.request.session.get("search_date")
-        context["passengers"] = self.request.session.get("passenger_count")
-        return context
-    
-# Vista que se ejecuta cuando se selecciona el itinerario
-class SelectItineraryView(View):    
-    def get(self, request):
-        # Redirigimos a la vista de elección de itinerario si se accede por GET
-        return redirect("choose_itinerary")
         
-    def post(self, request):
-        option_idx = int(request.POST.get("option_idx", 0))
-        select_route = self.request.session["route_chain_ids_list"]
+class ChooseItineraryView(APIView):
+    def post (self,request):
+        serializer = ChooseItinerarySerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(
+                {"errors": serializer.errors},
+                status=status.HTTP_400_BAD_REQUEST
+            )
         
-        request.session["route_chain"] = select_route[option_idx]
-        return redirect("load_passengers")  # Paso siguiente: cargar pasajeros
+        idItinerarie = serializer.validated_data["idItinerarie"]
+        tokenItineraries = serializer.validated_data["tokenItineraries"]
 
+        itineraries = get_itineraries(tokenItineraries)
 
+        for item in itineraries:
+            if item["id"] == idItinerarie:
+                selectedItinerarie = item
+                break
 
+        if not selectedItinerarie:
+            return Response(
+                {"errors": "Itinerarie No found"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        payload = {
+                "itineraries": itineraries,
+                "selectedItinerarie": selectedItinerarie
+            }
+
+        return Response(payload , status=status.HTTP_200_OK)

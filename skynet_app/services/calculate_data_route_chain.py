@@ -67,7 +67,7 @@ def calc_route_chain(
             "id": idx,
             "route_summary": route_summary,
             "duration": int(duration or 0),
-            "total_price": str(total_price),  # <-- seguro para JSON (evitás binarios)
+            "total_price": str(total_price), 
             "route_ids": chain_ids,
         })
 
