@@ -68,10 +68,14 @@ def calc_route_chain(
             "route_summary": route_summary,
             "duration": int(duration or 0),
 <<<<<<< HEAD
+<<<<<<< HEAD
             "total_price": str(total_price),  # <-- seguro para JSON (evitás binarios)
 =======
             "total_price": str(total_price), 
 >>>>>>> main-api
+=======
+            "total_price": str(total_price), 
+>>>>>>> db674df (intinerary view)
             "route_ids": chain_ids,
         })
 

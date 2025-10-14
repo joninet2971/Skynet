@@ -1,7 +1,6 @@
 from rest_framework import serializers
 from datetime import date
-from utils.token_store import get_itineraries
-
+from ...utils.token_store import  get_itineraries
 
 class SearchRouteSerializer(serializers.Serializer):
     origin = serializers.CharField(max_length=10)

@@ -111,6 +111,8 @@ WSGI_APPLICATION = "config.wsgi.application"
 CACHES = {"default": {"BACKEND": "django.core.cache.backends.locmem.LocMemCache"}}
 >>>>>>> main-api
 
+CACHES = {"default": {"BACKEND": "django.core.cache.backends.locmem.LocMemCache"}}
+
 
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
