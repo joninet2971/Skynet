@@ -8,6 +8,10 @@ from home.forms import LoginForm, RegisterForm, CarouselImageForm
 from reservations.forms import SearchRouteForm 
 from home.models import CarouselImage
 
+import logging
+
+logger = logging.getLogger(__name__)
+
 def home_view(request):
     lang = request.GET.get('lang')
     if lang in ['es', 'en', 'pt']:
@@ -16,9 +20,17 @@ def home_view(request):
     current_lang = get_language()
     form = SearchRouteForm()
     images = CarouselImage.objects.all()
+<<<<<<< HEAD
 
     languages = [l for l in ['es', 'en', 'pt'] if l != current_lang]
 
+=======
+    logger.error(
+        "Ingresando a view",
+        exc_info=True,
+        extra={"Contenido del error"}
+        )
+>>>>>>> 1cd4108 (iniciar proyecto con api)
     return render(request, "home/index.html", {
         "form": form,
         "images": images,
