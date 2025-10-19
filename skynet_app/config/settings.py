@@ -30,7 +30,6 @@ DEBUG = True
 ALLOWED_HOSTS = []
 
 
-
 # Application definition
 
 INSTALLED_APPS = [
@@ -41,13 +40,6 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "widget_tweaks",
-<<<<<<< HEAD
-    "rest_framework",
-    "rest_framework_simplejwt",
-    "drf_yasg",
-=======
->>>>>>> main-api
-
     "airplane",
     "flight",
     "home",
@@ -79,18 +71,10 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
-<<<<<<< HEAD
-<<<<<<< HEAD:skynet_app/skynet_app/settings.py
                 "django.template.context_processors.i18n",
-                'skynet_app.context_processors.get_time_data',
-                'skynet_app.context_processors.user_name',
-
-=======
+                'config.context_processors.get_time_data',
+                'config.context_processors.user_name',
                 'config.context_processors.get_time_data'
->>>>>>> 1cd4108 (iniciar proyecto con api):skynet_app/config/settings.py
-=======
-                'config.context_processors.get_time_data'
->>>>>>> main-api
             ],
         },
     },
@@ -105,14 +89,8 @@ MESSAGE_TAGS = {
 }
 
 WSGI_APPLICATION = "config.wsgi.application"
-<<<<<<< HEAD
-=======
 
 CACHES = {"default": {"BACKEND": "django.core.cache.backends.locmem.LocMemCache"}}
->>>>>>> main-api
-
-CACHES = {"default": {"BACKEND": "django.core.cache.backends.locmem.LocMemCache"}}
-
 
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
@@ -188,8 +166,6 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
-<<<<<<< HEAD
-<<<<<<< HEAD:skynet_app/skynet_app/settings.py
 # Configuración de DRF
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
@@ -221,9 +197,7 @@ SWAGGER_SETTINGS = {
             'in': 'header'
         }
     }
-=======
-=======
->>>>>>> main-api
+}
 #import logging
 #import sentry_sdk
 #from sentry_sdk.integrations.django import DjangoIntegration
@@ -252,8 +226,4 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.AllowAny'
     ]
-<<<<<<< HEAD
->>>>>>> 1cd4108 (iniciar proyecto con api):skynet_app/config/settings.py
-=======
->>>>>>> main-api
 }

@@ -20,23 +20,13 @@ def home_view(request):
     current_lang = get_language()
     form = SearchRouteForm()
     images = CarouselImage.objects.all()
-<<<<<<< HEAD
-<<<<<<< HEAD
 
     languages = [l for l in ['es', 'en', 'pt'] if l != current_lang]
 
-=======
-=======
->>>>>>> main-api
-    logger.error(
-        "Ingresando a view",
-        exc_info=True,
-        extra={"Contenido del error"}
-        )
-<<<<<<< HEAD
->>>>>>> 1cd4108 (iniciar proyecto con api)
-=======
->>>>>>> main-api
+
+    logger.error("Ingresando a view", extra={"nota": "Contenido del error"})
+
+
     return render(request, "home/index.html", {
         "form": form,
         "images": images,
