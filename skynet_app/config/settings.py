@@ -90,7 +90,14 @@ MESSAGE_TAGS = {
 
 WSGI_APPLICATION = "config.wsgi.application"
 
-CACHES = {"default": {"BACKEND": "django.core.cache.backends.locmem.LocMemCache"}}
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+        "LOCATION": "skynet-local-cache",
+    }
+}
+
+
 
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases

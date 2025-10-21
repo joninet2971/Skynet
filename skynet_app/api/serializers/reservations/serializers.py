@@ -17,12 +17,27 @@ class SearchRouteSerializer(serializers.Serializer):
 
 class ChooseItinerarySerializer(serializers.Serializer):
     idItinerarie = serializers.IntegerField(min_value=1)
-    tokenItineraries = serializers.CharField(max_length=50)
 
-    def validate_tokenItineraries(self, value):
-        data = get_itineraries(value)
+    def validate(self, attrs):
+        request = self.context.get("request")
+        token = self.context.get("token")
+
+        if not request or not token:
+            raise serializers.ValidationError("Falta información del contexto (request o token).")
+
+        data = get_itineraries(request, token)
         if not data:
-            raise serializers.ValidationError("El token es inválido o expiró.")
+            raise serializers.ValidationError("Token inválido o expirado.")
         
-        self.context["itineraries_data"] = data
-        return value
+        items = data.get("itineraries") or []
+
+        target_id = str(attrs["idItinerarie"])
+        selected = next((it for it in items if str(it.get("id")) == target_id), None)
+
+        if selected is None:
+            raise serializers.ValidationError({"idItinerarie": "Itinerario no encontrado."})
+
+        attrs["selected_itinerarie"] = selected
+        attrs["passengers_count"] = data.get("passengers_count", 1)
+        return attrs
+
