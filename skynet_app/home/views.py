@@ -34,6 +34,7 @@ def home_view(request):
         "languages": languages
     })
 
+
 def manage_carousel_view(request):
     images = CarouselImage.objects.all()
 
@@ -50,11 +51,13 @@ def manage_carousel_view(request):
         "images": images
     })
 
+
 def delete_carousel_image_view(request, image_id):
     image = get_object_or_404(CarouselImage, id=image_id)
     image.delete()
     return redirect('manage_carousel')
         
+
 class LogoutView(View):
     def get(self, request):
         logout(request)
@@ -67,13 +70,12 @@ class RegisterView(View):
         return render(
             request,
             'home/auth/register.html',
-            {"form" : form }
+            {"form": form}
         )
 
     def post(self, request):
         form = RegisterForm(request.POST)
         if form.is_valid():
-            print(form.cleaned_data["username"])
             user = User.objects.create_user(
                 username=form.cleaned_data["username"],
                 password=form.cleaned_data['password1'],
@@ -84,8 +86,14 @@ class RegisterView(View):
                 request,
                 "Usuario registrado correctamente"
             )
-        return redirect('login')
-        
+            return redirect('login')
+
+        # Si hay errores, se vuelve a renderizar el formulario
+        return render(
+            request,
+            'home/auth/register.html',
+            {"form": form}
+        )
 
 
 class LoginView(View):
@@ -111,7 +119,7 @@ class LoginView(View):
 
             if user is not None: 
                 login(request, user)
-                messages.success(request, "Sesion iniciada")
+                messages.success(request, "Sesión iniciada")
                 return redirect("home")
             else:
                 messages.error(request, "El usuario o contraseña no coinciden")
@@ -120,5 +128,6 @@ class LoginView(View):
             request, 
             "home/auth/login.html", 
             {'form': form}
-        ) 
+        )
+
 
