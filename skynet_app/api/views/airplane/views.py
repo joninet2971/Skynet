@@ -1,7 +1,7 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import IsAuthenticated
 from django.core.exceptions import ValidationError
 from airplane.models import Airplane
 from airplane.services import airplane_service
@@ -9,7 +9,7 @@ from api.serializers.airplane.serializer import AirplaneSerializer, SeatSerializ
 from django.shortcuts import get_object_or_404
 
 class AirplaneAPIView(APIView):
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticated]
     def get(self, request, pk=None):
         if pk:
             airplane = get_object_or_404(Airplane, id=pk, enabled=True)
