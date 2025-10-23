@@ -1,8 +1,7 @@
-from rest_framework.routers import DefaultRouter
-from api.views.airplane.views import AirplaneViewSet
+from django.urls import path
+from api.views.airplane.views import AirplaneAPIView
 
-# Router para el ViewSet
-router = DefaultRouter()
-router.register(r'airplanes', AirplaneViewSet, basename='airplane')
-
-urlpatterns = router.urls
+urlpatterns = [
+    path('airplanes/', AirplaneAPIView.as_view()),          # GET lista / POST crear
+    path('airplanes/<int:pk>/', AirplaneAPIView.as_view()), # GET detalle / PUT / PATCH / DELETE
+]
