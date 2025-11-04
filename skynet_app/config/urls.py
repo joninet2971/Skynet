@@ -42,4 +42,7 @@ urlpatterns = [
     
     # APIs
     path('api/airplane/', include('api.urls.airplane.urls')),
+    path('api/flight/', include('api.urls.flight.urls')),
+
+
 )
