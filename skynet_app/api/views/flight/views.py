@@ -21,6 +21,8 @@ class AirportListCreateAPI(APIView):
     permission_classes = [IsAdminUser]
 
     @swagger_auto_schema(
+        operation_summary="Listar Aeropuertos",
+        operation_description="Busca todos los aeropuertos",
         responses={200: AirportSerializer(many=True)}
     )
     def get(self, request):
@@ -29,6 +31,8 @@ class AirportListCreateAPI(APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     @swagger_auto_schema(
+        operation_summary="Crear Aeropuesto",
+        operation_description="Permite crear un nuevo aeropuerto",
         request_body=AirportSerializer,
         responses={201: AirportSerializer}
     )
@@ -52,7 +56,10 @@ class AirportDetailAPI(APIView):
         except Airport.DoesNotExist:
             return None
 
-    @swagger_auto_schema(responses={200: AirportSerializer, 404: "No encontrado"})
+    @swagger_auto_schema(
+            operation_summary="Buscar un aeropuerto",
+            operation_description="Busca un aeropuerto segun su ID",
+            responses={200: AirportSerializer, 404: "No encontrado"})
     def get(self, request, pk):
         airport = self.get_object(pk)
         if not airport:
@@ -60,7 +67,10 @@ class AirportDetailAPI(APIView):
         serializer = AirportSerializer(airport)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-    @swagger_auto_schema(request_body=AirportSerializer, responses={200: AirportSerializer, 404: "No encontrado"})
+    @swagger_auto_schema(
+            operation_summary="Modificar aeropuerto",
+            operation_description="Modifica aeropuerto completo",
+            request_body=AirportSerializer, responses={200: AirportSerializer, 404: "No encontrado"})
     def put(self, request, pk):
         airport = self.get_object(pk)
         if not airport:
@@ -73,7 +83,10 @@ class AirportDetailAPI(APIView):
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    @swagger_auto_schema(request_body=AirportSerializer, responses={200: AirportSerializer, 404: "No encontrado"})
+    @swagger_auto_schema(
+            operation_summary="Modificar datos de aeropuerto",
+            operation_description="Modifica algunos datos de un aeropuerto",
+            request_body=AirportSerializer, responses={200: AirportSerializer, 404: "No encontrado"})
     def patch(self, request, pk):
         airport = self.get_object(pk)
         if not airport:
@@ -86,7 +99,10 @@ class AirportDetailAPI(APIView):
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    @swagger_auto_schema(responses={204: "Eliminado", 404: "No encontrado"})
+    @swagger_auto_schema(
+            operation_summary="Elimina aeropuerto",
+            operation_description="Elimina un aeropuerto",
+            responses={204: "Eliminado", 404: "No encontrado"})
     def delete(self, request, pk):
         airport = self.get_object(pk)
         if not airport:
