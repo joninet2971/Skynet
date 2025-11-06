@@ -11,8 +11,8 @@ class SearchRouteSerializer(serializers.Serializer):
     def validate(self, attrs):
         if attrs["origin"] == attrs["destination"]:
             raise serializers.ValidationError("El origen y destino no pueden ser iguales.")
-        #if attrs["date"] < date.today():
-        #    raise serializers.ValidationError("La fecha no puede ser en el pasado.")
+        if attrs["date"] < date.today():
+            raise serializers.ValidationError("La fecha no puede ser en el pasado.")
         return attrs
 
 class ChooseItinerarySerializer(serializers.Serializer):
