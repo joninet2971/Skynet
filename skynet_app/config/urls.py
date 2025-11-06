@@ -27,6 +27,11 @@ urlpatterns = [
     # JWT Authentication URLs
     path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+
+        # APIs
+    path('api/airplane/', include('api.urls.airplane.urls')),
+    path('api/flight/', include('api.urls.flight.urls')),
+    path('api/reservations/', include('api.urls.reservations.urls')),
     
     # Swagger URLs
     re_path(r'^swagger(?P<format>\.json|\.yaml)$', schema_view.without_ui(cache_timeout=0), name='schema-json'),
@@ -40,6 +45,6 @@ urlpatterns = [
     path('reservations/', include('reservations.urls')),
     path('flight/', include('flight.urls')),
     
-    # APIs
-    path('api/airplane/', include('api.urls.airplane.urls')),
+
+
 )

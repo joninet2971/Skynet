@@ -29,7 +29,6 @@ INSTALLED_APPS = [
     "rest_framework_simplejwt",
     "drf_yasg",
 
-
     # Apps del proyecto
     "airplane",
     "flight",
@@ -78,6 +77,14 @@ TEMPLATES = [
 # --- WSGI ---
 WSGI_APPLICATION = "config.wsgi.application"
 
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+        "LOCATION": "skynet-local-cache",
+        "TIMEOUT": None,
+    }
+}
+
 
 # --- DATABASE ---
 DATABASES = {
@@ -113,8 +120,9 @@ LOCALE_PATHS = [
     BASE_DIR / "locale",
 ]
 
+USE_TZ = True
+TIME_ZONE = "America/Argentina/Buenos_Aires"
 
-# --- STATIC & MEDIA ---
 STATIC_URL = "/static/"
 STATICFILES_DIRS = [BASE_DIR / "static"]
 STATIC_ROOT = BASE_DIR / "staticfiles"

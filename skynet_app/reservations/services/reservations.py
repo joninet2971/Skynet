@@ -358,6 +358,52 @@ class SeatService:
                 })
 
         return seat_data
+    
+    @staticmethod
+    def get_available_seats_for_passengers_docs(passenger_docs: List[str], route_ids: List[int]) -> List[dict]:
+        """Asientos por pasajero(DNI) × vuelo(route_ids). JSON-ready."""
+        SeatService._remove_expired_segments()
+
+        docs = [d for d in passenger_docs if d]
+        if not docs or not route_ids:
+            return []
+
+        routes = Route.objects.filter(id__in=route_ids)
+        flights = list(
+            Flight.objects
+            .filter(route__in=routes)                 # poné status="active" si existe en tu modelo
+            .select_related("airplane", "route")
+        )
+        if not flights:
+            return []
+
+        out: List[dict] = []
+
+        for p_idx, doc in enumerate(dict.fromkeys(docs)):  
+            for f_idx, flight in enumerate(flights):
+                seg_status_sq = (FlightSegment.objects
+                    .filter(seat=OuterRef("pk"), flight=flight)
+                    .values("status")[:1])
+
+                seats_qs = (Seat.objects
+                    .filter(airplane=flight.airplane)
+                    .annotate(segment_status=Coalesce(Subquery(seg_status_sq), Value("available")))
+                    .values("id", "row", "column", "number", "type", "segment_status")
+                    .order_by("row", "column"))
+
+                seats = list(seats_qs)
+                # armamos un "code" legible tipo "12A"
+                for s in seats:
+                    s["code"] = f"{s.get('row')}{s.get('column') or ''}"
+
+                out.append({
+                    "key": f"{p_idx}_{f_idx}",
+                    "passenger_document": doc,
+                    "flight": {"id": flight.id, "code": getattr(flight, "code", str(flight.id))},
+                    "seats": seats,
+                })
+
+        return out
 
 
     @staticmethod
@@ -369,7 +415,6 @@ class SeatService:
         ).exists()
 
     
-
 # -------------------- Reservation Service --------------------
 
 class ReservationService:
