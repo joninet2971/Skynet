@@ -12,9 +12,9 @@ def create_airplane_view(request):
         form = AirplaneForm(request.POST)
         if form.is_valid():
             try:
-                airplane_service.create_airplane_service(form.cleaned_data)
+                airplane = airplane_service.create_airplane_service(form.cleaned_data)
                 messages.success(request, "Airplane created successfully!")
-                return redirect('create_airplane')
+                return redirect('view_airplane', airplane_id=airplane.id)
             except ValidationError as e:
                 form.add_error(None, e.message)
                 messages.error(request, f"Error creating airplane: {e.message}")
