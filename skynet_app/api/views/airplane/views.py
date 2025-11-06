@@ -117,10 +117,13 @@ class AirplaneAPIView(APIView):
         security=[{"Bearer": []}]
     )
     def delete(self, request, pk):
-        airplane = get_object_or_404(Airplane, id=pk, enabled=True)
+        airplane = get_object_or_404(Airplane, id=pk)
         try:
             airplane_service.delete_airplane_service(pk)
-            return Response({'detail': f'Avión {airplane.model} eliminado correctamente'}, status=status.HTTP_200_OK)
+            return Response(
+                {'detail': f'Avión {airplane.model} eliminado correctamente'},
+                status=status.HTTP_200_OK
+            )
         except ValidationError as e:
             return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -141,5 +144,3 @@ class AirplaneAPIView(APIView):
             return Response(serializer.data, status=status.HTTP_200_OK)
         except ValidationError as e:
             return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
-
-
