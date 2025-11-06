@@ -1,8 +1,6 @@
 from django.core.cache import cache
 from .token import new_search_token
 
-TTL_SECONDS = 60 * 60  # 1 hora 
-
 
 # NAMESPACE (logueado o anónimo)
 
@@ -34,15 +32,27 @@ def _key(user_type: str, user_id: str, token: str) -> str:
 
 # CRUD BÁSICO DE ITINERARIOS EN CACHÉ
 
-def save_itineraries(request, payload: dict) -> str:
+def save_itineraries(
+    request,
+    payload_itinerary: dict,
+    passengers_count: int = 0,
+    payload_passengers: dict = None
+) -> str:
     """
     Guarda un itinerario en la cache asociado al usuario/sesión actual.
-    Se genera token nuevo.
-    ej. cache set itinerarie:anonymous:vm66ba1ovrvic44ganzji1kmziwnjiwf:f05713ca66d74eba973fdff5fb7dce7c
+    Retorna un token único para luego recuperar.
     """
     user_type, user_id = get_namespace(request)
     token = new_search_token()
-    cache.set(_key(user_type, user_id, token), payload, timeout=TTL_SECONDS)
+
+    cache_key = _key(user_type, user_id, token)
+    cache_value = {
+        "itinerary": payload_itinerary,
+        "passengers_count": passengers_count,
+        "passengers": payload_passengers,
+    }
+
+    cache.set(cache_key, cache_value, timeout=600)
     return token
 
 

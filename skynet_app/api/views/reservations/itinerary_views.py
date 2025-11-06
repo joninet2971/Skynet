@@ -8,11 +8,10 @@ from reservations.services.reservations import RouteService
 from flight.models import Flight, Route
 
 from services.calculate_data_route_chain import calc_route_chain
-from ...utils.token_store import save_itineraries, get_itineraries, delete_itineraries
+from ...utils.token_store import save_itineraries
 
 
 class SearchAndCreateItineraryAPI(APIView):
-    #permission_classes = [permissions.AllowAny]  
 
     def post(self, request):
  
@@ -43,12 +42,13 @@ class SearchAndCreateItineraryAPI(APIView):
             # Cálculo de opciones 
             options = calc_route_chain(route_chains, Route.objects, Flight.objects)
 
-            payloadCache = {
-                "itineraries": options["itineraries"],
-                "passengers_count": passengers_count,  
-            }
-            tokenItineraries = save_itineraries(request,payloadCache)
-            #print(get_itineraries(request, tokenItineraries))
+            
+            tokenItineraries = save_itineraries(
+                request, 
+                payload_itinerary=options["itineraries"],
+                passengers_count=passengers_count
+                )
+           
 
             payload = {
                 "tokenItineraries":tokenItineraries,
@@ -68,28 +68,28 @@ class SearchAndCreateItineraryAPI(APIView):
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
-
-class ChooseItineraryView(APIView):
-    #permission_classes = [permissions.AllowAny]  # ajustá según tu auth
-    
+class ChooseItineraryAPI(APIView):
     def post(self, request, token):
         serializer = ChooseItinerarySerializer(
             data=request.data,
             context={"request": request, "token": token}
         )
         serializer.is_valid(raise_exception=True)
-      
-        
-        payload = {
-            "itinerarie": serializer.validated_data["selected_itinerarie"],
-            "passengers_count": serializer.validated_data["passengers_count"],
-        }
 
-        tokenItinerariesSelected = save_itineraries(request, payload)
-        print(get_itineraries(request, tokenItinerariesSelected))
+        selected_itinerary = serializer.validated_data["selected_itinerarie"]  
+        passengers_count = serializer.validated_data["passengers_count"]
 
-        return Response({
-            "tokenItinerariesSelected": tokenItinerariesSelected,
-            "itinerarieSelected": payload
-            
-        }, status=status.HTTP_200_OK)
+        token_itineraries_selected = save_itineraries(
+            request,
+            payload_itinerary=selected_itinerary,
+            passengers_count=passengers_count
+        )
+
+        return Response(
+            {
+                "tokenItinerariesSelected": token_itineraries_selected,
+                "itinerarySelected": selected_itinerary,
+                "passengers_count": passengers_count
+            },
+            status=status.HTTP_201_CREATED
+        )

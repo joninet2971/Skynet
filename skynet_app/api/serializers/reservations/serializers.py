@@ -29,7 +29,7 @@ class ChooseItinerarySerializer(serializers.Serializer):
         if not data:
             raise serializers.ValidationError("Token inválido o expirado.")
         
-        items = data.get("itineraries") or []
+        items = data.get("itinerary") or []
 
         target_id = str(attrs["idItinerarie"])
         selected = next((it for it in items if str(it.get("id")) == target_id), None)
@@ -41,3 +41,25 @@ class ChooseItinerarySerializer(serializers.Serializer):
         attrs["passengers_count"] = data.get("passengers_count", 1)
         return attrs
 
+class LoadPassengersSerializer(serializers.Serializer):
+    STATUS_CHOICES = [
+        ('dni', 'DNI'),
+        ('passport', 'Pasaporte'),
+    ]
+
+    name = serializers.CharField(max_length=100)
+    document = serializers.CharField(max_length=50)
+    email = serializers.EmailField()
+    phone = serializers.CharField(max_length=20)
+    birth_date = serializers.DateField()
+    document_type = serializers.ChoiceField(choices=STATUS_CHOICES)
+
+    #def validate_phone(self, value):
+    #    if not value.replace("+", "").replace(" ", "").isdigit():
+    #        raise serializers.ValidationError("El teléfono debe contener solo números o '+'.")
+    #    return value
+#
+    #def validate_birth_date(self, value):
+    #    if value > date.today():
+    #        raise serializers.ValidationError("La fecha de nacimiento no puede ser futura.")
+    #    return value

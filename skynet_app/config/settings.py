@@ -94,8 +94,10 @@ CACHES = {
     "default": {
         "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
         "LOCATION": "skynet-local-cache",
+        "TIMEOUT": None,
     }
 }
+
 
 
 
@@ -146,11 +148,8 @@ LOCALE_PATHS = [
     BASE_DIR / 'locale',
 ]
 
-
-TIME_ZONE = "UTC"
-
 USE_TZ = True
-
+TIME_ZONE = "America/Argentina/Buenos_Aires"
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
