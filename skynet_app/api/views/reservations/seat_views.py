@@ -1,8 +1,12 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from rest_framework.permissions import AllowAny
 from rest_framework import status
 from django.utils import timezone
 from django.core.cache import cache
+
+from drf_yasg.utils import swagger_auto_schema
+from drf_yasg import openapi
 
 from reservations.services.seat_read import SeatReadService
 from flight.models import Flight, Route
@@ -60,7 +64,6 @@ def _assignment_status(passengers, flights, selections):
 
     for f in flights:
         fid = f["id"]
-        # asientos asignados (seat_id no nulo) para este vuelo
         assigned = sum(1 for s in selections if s["flight_id"] == fid and s["seat_id"] is not None)
         remaining = max(0, total - assigned)
         remaining_per_flight[fid] = remaining
@@ -70,12 +73,111 @@ def _assignment_status(passengers, flights, selections):
     return remaining_per_flight, all_for_flight, all_itinerary
 
 
+token_param = openapi.Parameter(
+    name="token",
+    in_=openapi.IN_PATH,
+    description="Token de itinerario (generado previamente)",
+    type=openapi.TYPE_STRING,
+    required=True,
+)
+
+choose_seat_request_schema = openapi.Schema(
+    type=openapi.TYPE_OBJECT,
+    required=["passenger_document", "flight_id"],
+    properties={
+        "passenger_document": openapi.Schema(type=openapi.TYPE_STRING, description="Documento del pasajero"),
+        "flight_id": openapi.Schema(type=openapi.TYPE_INTEGER, description="ID del vuelo"),
+        "seat_id": openapi.Schema(type=openapi.TYPE_INTEGER, nullable=True, description="ID del asiento (opcional: null para desasignar)"),
+    },
+    example={"passenger_document": "32123456", "flight_id": 1, "seat_id": 200}
+)
+
+choose_seat_ok_example = {
+    "ok": True,
+    "flight_id": 1,
+    "seat_id": 200,
+    "remaining_per_flight": {"1": 0, "4": 0},
+    "all_assigned_for_flight": {"1": True, "4": True},
+    "all_assigned_for_itinerary": True,
+    "itinerary": {
+        "id": 1,
+        "route_summary": "AEP → COR → BRC",
+        "duration": 225,
+        "total_price": "220000.00",
+        "route_ids": [1, 4],
+    },
+    "passengers": [
+        {"name": "Juan Pérez", "document": "32123456", "email": "juan.perez@example.com",
+         "phone": "+54 9 351 555-1111", "birth_date": "1990-05-10", "document_type": "dni"},
+        {"name": "María Gomez", "document": "28999888", "email": "maria.gomez@example.com",
+         "phone": "+54 9 351 555-2222", "birth_date": "1992-11-22", "document_type": "dni"},
+    ],
+    "flights": [
+        {"id": 1, "code": "1", "seat_map": {"version": 3, "rows": []}},
+        {"id": 4, "code": "4", "seat_map": {"version": 1, "rows": []}},
+    ],
+    "selections": [
+        {"passenger_document": "32123456", "flight_id": 1, "seat_id": 200},
+        {"passenger_document": "32123456", "flight_id": 4, "seat_id": 410},
+        {"passenger_document": "28999888", "flight_id": 1, "seat_id": 201},
+        {"passenger_document": "28999888", "flight_id": 4, "seat_id": 411},
+    ],
+    "locks": [],
+}
+
+
 class ChooseSeatNormalizedViewAPI(APIView):
+    permission_classes = [AllowAny]
     """
     GET /api/itineraries/{token}/seat/
     POST /api/itineraries/{token}/seat/
     """
 
+    @swagger_auto_schema(
+        operation_id="get_itinerary_seat_maps",
+        operation_summary="Obtener grillas de asientos por vuelo del itinerario",
+        operation_description=(
+            "Devuelve grillas normalizadas por vuelo, asientos confirmados/retenidos, "
+            "selecciones existentes por (pasajero × vuelo) y locks activos."
+        ),
+        manual_parameters=[token_param],
+        responses={
+            200: openapi.Response(
+                description="OK",
+                examples={
+                    "application/json": {
+                        "itinerary": {
+                            "id": 1,
+                            "route_summary": "AEP → COR → BRC",
+                            "duration": 225,
+                            "total_price": "220000.00",
+                            "route_ids": [1, 4],
+                        },
+                        "passengers": [
+                            {"name": "Juan Pérez", "document": "32123456", "email": "juan.perez@example.com",
+                             "phone": "+54 9 351 555-1111", "birth_date": "1990-05-10", "document_type": "dni"},
+                            {"name": "María Gomez", "document": "28999888", "email": "maria.gomez@example.com",
+                             "phone": "+54 9 351 555-2222", "birth_date": "1992-11-22", "document_type": "dni"},
+                        ],
+                        "flights": [
+                            {"id": 1, "code": "1", "seat_map": {"version": 1, "rows": []}},
+                            {"id": 4, "code": "4", "seat_map": {"version": 1, "rows": []}},
+                        ],
+                        "selections": [
+                            {"passenger_document": "32123456", "flight_id": 1, "seat_id": None},
+                            {"passenger_document": "32123456", "flight_id": 4, "seat_id": None},
+                            {"passenger_document": "28999888", "flight_id": 1, "seat_id": None},
+                            {"passenger_document": "28999888", "flight_id": 4, "seat_id": None},
+                        ],
+                        "locks": [],
+                    }
+                },
+            ),
+            400: openapi.Response(description="Token válido pero datos mal formados (route_ids inválido)"),
+            404: openapi.Response(description="Itinerario no encontrado"),
+        },
+        tags=["Reservations"],
+    )
     def get(self, request, token):
         data = get_itineraries(request, token)
         if not data:
@@ -89,15 +191,13 @@ class ChooseSeatNormalizedViewAPI(APIView):
         passengers = data.get("passengers") or []
         passenger_docs = [p.get("document") for p in passengers if p.get("document")]
 
-        # Vuelos activos en esas rutas
         routes = Route.objects.filter(id__in=route_ids)
         flights_qs = Flight.objects.filter(route__in=routes, status="active").order_by("id")
         flights = list(flights_qs)
 
-        # Estados por vuelo (desde DB, solo lectura)
         confirmed_by_flight, held_by_flight = SeatReadService.get_status_sets_by_flight(flights)
 
-        # Grillas por vuelo (normalizadas)
+
         flights_payload = []
         for fl in flights:
             seat_map = SeatReadService.build_seat_map(
@@ -111,12 +211,11 @@ class ChooseSeatNormalizedViewAPI(APIView):
                 "seat_map": seat_map,
             })
 
-        # Selecciones existentes (si el pasajero ya tiene FlightSegments)
+
         selections_payload = SeatReadService.get_selections_for_itinerary_docs(passenger_docs, flights)
-        # Rellenar faltantes (seat_id=None)
+
         selections_payload = _fill_missing_selections(passenger_docs, flights_payload, selections_payload)
 
-        # Locks derivados de reserved no vencido
         locks_payload = SeatReadService.locks_payload_from_held(held_by_flight)
 
         payload = {
@@ -133,11 +232,35 @@ class ChooseSeatNormalizedViewAPI(APIView):
             "locks": locks_payload,
         }
 
-        # cache para que el POST no tenga que ir a DB
         _ensure_flights_in_cache(request, token, payload)
 
         return Response(payload, status=status.HTTP_200_OK)
 
+    @swagger_auto_schema(
+        operation_id="choose_seat",
+        operation_summary="Elegir / actualizar asiento para un pasajero en un vuelo",
+        operation_description=(
+            "Asigna o actualiza el **asiento** de un **pasajero** para un **vuelo** del itinerario.\n"
+            "- Si `seat_id` es `null`, desasigna.\n"
+            "- Valida que el asiento exista y esté disponible.\n"
+            "- Responde con el estado de asignación por vuelo e itinerario."
+        ),
+        manual_parameters=[token_param],
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            allOf=[choose_seat_request_schema],  
+        ),
+        responses={
+            200: openapi.Response(
+                description="Asignación/actualización realizada",
+                examples={"application/json": choose_seat_ok_example},
+            ),
+            400: openapi.Response(description="Body inválido / pasajero o vuelo fuera del token"),
+            404: openapi.Response(description="Token inválido o expirado"),
+            409: openapi.Response(description="Asiento no disponible"),
+        },
+        tags=["Reservations"],
+    )
     def post(self, request, token):
         body = request.data
         doc = body.get("passenger_document")
@@ -145,7 +268,6 @@ class ChooseSeatNormalizedViewAPI(APIView):
         seat_id = body.get("seat_id")
         seat_id = None if seat_id is None else _cast_int(seat_id)
 
-        # cache actual
         data = get_itineraries(request, token)
         if not data:
             return Response({"detail": "Token inválido o expirado."}, status=status.HTTP_404_NOT_FOUND)
@@ -154,17 +276,17 @@ class ChooseSeatNormalizedViewAPI(APIView):
         flights = data.get("flights") or []
         selections = data.setdefault("selections", [])
 
-        # validar pasajero
+
         docs = {p.get("document") for p in passengers}
         if doc not in docs:
             return Response({"detail": "Pasajero inválido para este token."}, status=400)
 
-        # validar vuelo
+
         flight = next((f for f in flights if _cast_int(f.get("id")) == flight_id), None)
         if not flight:
             return Response({"detail": "Vuelo inválido para este token."}, status=400)
 
-        # validar asiento (si viene)
+
         prev_seat_id = None
         for s in selections:
             if s["passenger_document"] == doc and _cast_int(s["flight_id"]) == flight_id:
@@ -185,7 +307,6 @@ class ChooseSeatNormalizedViewAPI(APIView):
             if target_seat.get("status") != "available" and seat_id != prev_seat_id:
                 return Response({"detail": "Asiento no disponible."}, status=409)
 
-        # actualizar selections (una por pasajero×vuelo)
         data["selections"] = [
             s for s in selections
             if not (s["passenger_document"] == doc and _cast_int(s["flight_id"]) == flight_id)
@@ -196,7 +317,6 @@ class ChooseSeatNormalizedViewAPI(APIView):
             "seat_id": seat_id
         })
 
-        #feedback optimista en grilla
         if prev_seat_id and prev_seat_id != seat_id:
             for row in flight["seat_map"]["rows"]:
                 for s in row["seats"]:
@@ -208,11 +328,9 @@ class ChooseSeatNormalizedViewAPI(APIView):
         flight["seat_map"]["version"] = int(flight["seat_map"]["version"]) + 1
         flight["seat_map"]["updated_at"] = timezone.now().isoformat().replace("+00:00", "Z")
 
-        # guardar en cache
         user_type, user_id = get_namespace(request)
         cache.set(_key(user_type, user_id, token), data, timeout=600)
 
-        # calcular pendientes
         selections_filled = _fill_missing_selections(
             [p.get("document") for p in passengers if p.get("document")],
             flights,
@@ -220,7 +338,6 @@ class ChooseSeatNormalizedViewAPI(APIView):
         )
         remaining_per_flight, all_for_flight, all_itinerary = _assignment_status(passengers, flights, selections_filled)
 
-    
         payload = {
             "ok": True,
             "flight_id": flight_id,

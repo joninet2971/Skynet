@@ -86,11 +86,6 @@ CACHES = {
 }
 
 
-
-
-# Database
-# https://docs.djangoproject.com/en/5.2/ref/settings/#databases
-
 # --- DATABASE ---
 DATABASES = {
     "default": {
@@ -125,17 +120,9 @@ LOCALE_PATHS = [
     BASE_DIR / "locale",
 ]
 
-<<<<<<< HEAD
 USE_TZ = True
 TIME_ZONE = "America/Argentina/Buenos_Aires"
 
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/5.2/howto/static-files/
-
-=======
-
-# --- STATIC & MEDIA ---
->>>>>>> 82a31688d9a88d8c984a34a2cf2139df0a04dcc7
 STATIC_URL = "/static/"
 STATICFILES_DIRS = [BASE_DIR / "static"]
 STATIC_ROOT = BASE_DIR / "staticfiles"
