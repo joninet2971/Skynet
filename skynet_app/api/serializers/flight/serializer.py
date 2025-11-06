@@ -10,7 +10,6 @@ class AirportSerializer(serializers.ModelSerializer):
         fields = ['id', 'name', 'code', 'city', 'country']
 
     def validate_code(self, value):
-        # Validar que el código tenga exactamente 3 letras (formato IATA)
         if len(value) != 3 or not value.isalpha():
             raise serializers.ValidationError("El código del aeropuerto debe tener exactamente 3 letras.")
         return value.upper()
@@ -35,19 +34,20 @@ class RouteSerializer(serializers.ModelSerializer):
         ]
 
     def validate(self, data):
-        if data["origin_airport"] == data["destination_airport"]:
+        origin = data.get("origin_airport") or getattr(self.instance, "origin_airport", None)
+        destination = data.get("destination_airport") or getattr(self.instance, "destination_airport", None)
+        duration = data.get("estimated_duration") or getattr(self.instance, "estimated_duration", None)
+
+        if origin and destination and origin == destination:
             raise serializers.ValidationError("El aeropuerto de origen y destino deben ser distintos.")
 
-        if data["estimated_duration"] <= 0:
+        if duration is not None and duration <= 0:
             raise serializers.ValidationError("La duración estimada debe ser mayor a cero (en minutos).")
 
         return data
 
 
-
-
 class FlightSerializer(serializers.ModelSerializer):
-    # Campos para lectura (muestran detalles)
     airplane = serializers.PrimaryKeyRelatedField(queryset=Airplane.objects.all())
     route = serializers.PrimaryKeyRelatedField(queryset=Route.objects.all())
 
@@ -55,8 +55,8 @@ class FlightSerializer(serializers.ModelSerializer):
         model = Flight
         fields = [
             'id',
-            'airplane',       
-            'route',                  
+            'airplane',
+            'route',
             'departure_time',
             'arrival_time',
             'status',
@@ -70,8 +70,10 @@ class FlightSerializer(serializers.ModelSerializer):
 
         if departure and arrival and arrival <= departure:
             raise serializers.ValidationError("La hora de llegada debe ser posterior a la hora de salida.")
+
         if departure and departure < timezone.now():
             raise serializers.ValidationError("La hora de salida no puede estar en el pasado.")
+
         if base_price is not None and base_price <= 0:
             raise serializers.ValidationError("El precio base debe ser mayor a 0.")
 
